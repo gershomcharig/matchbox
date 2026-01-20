@@ -28,7 +28,7 @@ This project follows an incremental "vibe coding" approach:
 - Catch bugs early by testing each piece in isolation
 - Commit after each working step to maintain a stable baseline
 
-This approach prevents bugs from compounding and makes it easier to identify what broke when something goes wrong. See `roadmap.md` for the detailed step-by-step plan.
+This approach prevents bugs from compounding and makes it easier to identify what broke when something goes wrong. See `docs/roadmap.md` for the detailed step-by-step plan.
 
 ## Key Architecture Decisions
 - **Mobile-first responsive design** with minimal/clean aesthetic
