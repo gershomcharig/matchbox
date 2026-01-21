@@ -164,13 +164,13 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 - [x] **Test**: Modal opens, form works (no save yet)
 
 ### 3.5 Create Collection - Save
-- [ ] On submit, insert into `collections` table
-- [ ] Close modal on success
-- [ ] **Test**: New collection appears in Supabase dashboard
+- [x] On submit, insert into `collections` table
+- [x] Close modal on success
+- [x] **Test**: New collection appears in Supabase dashboard
 
 ### 3.6 Fetch Collections
-- [ ] Create function to fetch all collections
-- [ ] **Test**: Console log shows collections from database
+- [x] Create function to fetch all collections
+- [x] **Test**: Console log shows collections from database
 
 ### 3.7 Display Collections
 - [ ] Create simple collections list component

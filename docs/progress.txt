@@ -8,7 +8,7 @@ Read this file at the start of each session to maintain context and avoid repeat
 ## Current Status
 **Last Updated**: 2026-01-21
 **Current Phase**: Phase 3 IN PROGRESS
-**Next Step**: Phase 3.5 - Create Collection Save
+**Next Step**: Phase 3.7 - Display Collections
 
 ---
 
@@ -39,6 +39,14 @@ Read this file at the start of each session to maintain context and avoid repeat
   - Live preview of collection (color + icon + name)
   - Form validation (name required)
   - Submit/Cancel buttons with loading state
+- [x] 3.5 Create Collection Save - src/app/actions/collections.ts
+  - Server action createCollection() inserts into Supabase collections table
+  - Added "New Collection" button to Layout header
+  - Modal closes on successful creation
+  - onCollectionCreated callback for parent refresh
+- [x] 3.6 Fetch Collections - src/app/actions/collections.ts
+  - Server action getCollections() fetches all collections
+  - Orders by created_at descending (newest first)
 
 ### Phase 0: Project Setup (COMPLETE)
 - [x] 0.1 Initialize Next.js with App Router (commit: 1b205b7)
@@ -223,6 +231,10 @@ Read this file at the start of each session to maintain context and avoid repeat
 - Created: src/components/Modal.tsx (reusable modal/dialog component)
 - Created: src/components/NewCollectionModal.tsx (collection creation form)
 
+### 2026-01-21 (Phase 3.5 & 3.6)
+- Created: src/app/actions/collections.ts (server actions for collections CRUD)
+- Modified: src/components/Layout.tsx (added New Collection button and modal integration)
+
 ---
 
 ## Learnings
@@ -248,10 +260,9 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ## Next Steps (from roadmap.md)
 
-1. Phase 3.5: Create Collection - Save to database
-2. Phase 3.6: Fetch Collections
-3. Phase 3.7: Display Collections
-4. Phase 3.8: Default Collection
-5. Phase 3.6-3.8: Fetch, display collections, default collection
+1. Phase 3.7: Display Collections
+2. Phase 3.8: Default Collection
+3. Phase 4.1: Paste Listener
+4. Phase 4.2: Google Maps URL Detection
 
 Reference: docs/roadmap.md for full task breakdown
