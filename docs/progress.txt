@@ -7,8 +7,8 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ## Current Status
 **Last Updated**: 2026-01-21
-**Current Phase**: Phase 0 Complete, Ready for Phase 1
-**Next Step**: Phase 1.1 - Mapbox Setup
+**Current Phase**: Phase 1 Complete, Ready for Phase 2
+**Next Step**: Phase 2.1 - Password Setup Screen
 
 ---
 
@@ -23,9 +23,16 @@ Read this file at the start of each session to maintain context and avoid repeat
 - [x] 0.6-0.9 Database schema created:
   - settings table (key, value)
   - collections table (id, name, color, icon, timestamps)
-  - places table (id, collection_id, name, address, lat, lng, google_maps_url, rating, opening_hours, website, phone, notes, timestamps, deleted_at)
+  - places table (all fields per schema)
   - tags table (id, name)
   - place_tags junction table (place_id, tag_id)
+
+### Phase 1: Map Foundation (COMPLETE)
+- [x] 1.1 Mapbox Setup - installed mapbox-gl@3.18.0 and react-map-gl@8.1.0
+- [x] 1.2 Basic Map component - components/Map.tsx, centered on London (51.5074, -0.1278)
+- [x] 1.3 Map styling - using mapbox://styles/mapbox/light-v11, fills viewport
+- [x] 1.4 Responsive layout shell - components/Layout.tsx with flex layout
+- [x] 1.5 Empty state overlay - components/EmptyState.tsx with prompt message
 
 ---
 
@@ -38,55 +45,77 @@ Read this file at the start of each session to maintain context and avoid repeat
 - Soft delete via deleted_at timestamp on places
 
 ### Project Structure
-- /app - Next.js App Router pages
-- /components - React components
-- /lib - Utility functions (supabase.ts, etc.)
+- /src/app - Next.js App Router pages
+- /src/components - React components
+- /src/lib - Utility functions (supabase.ts, etc.)
 - /docs - Documentation (roadmap.md, PRD.md, progress.txt)
+
+### Map Implementation
+- Using react-map-gl v8 with subpath import: `react-map-gl/mapbox`
+- Map style: mapbox://styles/mapbox/light-v11 (clean, minimal)
+- Initial zoom level: 11
+
+### UI/Design
+- Minimal, clean aesthetic
+- Empty state overlay positioned at bottom center
+- Glass-morphism style card (bg-white/95 with backdrop-blur)
+- Responsive breakpoint at lg (1024px) for desktop side panel
 
 ---
 
 ## Blockers Encountered
 
-(None yet - document any blockers here with attempted solutions)
+### 2026-01-21 - react-map-gl import issue with Turbopack
+**Problem**: Build failed with "Module not found: Can't resolve 'react-map-gl'"
+**Why it failed**: react-map-gl v8 uses subpath exports, no default export
+**Solution**: Changed import from `react-map-gl` to `react-map-gl/mapbox`
 
 ---
 
 ## Failed Approaches
 
-(Document approaches that didn't work to avoid repeating them)
-
-Example format:
-```
-### [Date] - [What was attempted]
-**Problem**: Description of what went wrong
-**Why it failed**: Root cause analysis
-**Better approach**: What to do instead
-```
+### 2026-01-21 - Default react-map-gl import
+**Problem**: `import MapGL from 'react-map-gl'` failed in Turbopack
+**Why it failed**: react-map-gl v8 restructured exports to use subpaths
+**Better approach**: Use `import { Map } from 'react-map-gl/mapbox'` for Mapbox GL
 
 ---
 
 ## Files Changed Log
 
 ### 2026-01-21
-- Created: docs/progress.txt (this file)
+- Created: docs/progress.txt
 - Modified: CLAUDE.md (added progress tracking instructions)
-
-(Add entries as work progresses)
+- Modified: package.json (added mapbox-gl, react-map-gl)
+- Created: src/components/Map.tsx
+- Created: src/components/Layout.tsx
+- Created: src/components/EmptyState.tsx
+- Modified: src/app/page.tsx (uses Layout, Map, EmptyState)
+- Modified: src/app/layout.tsx (updated title and description)
 
 ---
 
 ## Learnings
 
-(Document technical insights, gotchas, and tips discovered during development)
+### react-map-gl v8 Breaking Changes
+- v8 uses ES module subpath exports
+- Import from `react-map-gl/mapbox` for Mapbox GL JS
+- Import from `react-map-gl/maplibre` for MapLibre GL JS
+- The Map component is named export, not default: `{ Map }`
+
+### Next.js 16 with Turbopack
+- Turbopack has stricter module resolution than Webpack
+- Some npm packages may need specific import paths
+- Build errors often more informative than dev server errors
 
 ---
 
 ## Next Steps (from roadmap.md)
 
-1. Phase 1.1: Get Mapbox API key, add to .env.local, install mapbox-gl and react-map-gl
-2. Phase 1.2: Create components/Map.tsx with basic Mapbox map centered on London
-3. Phase 1.3: Style map to fill viewport
-4. Phase 1.4: Create responsive layout shell
-5. Phase 1.5: Add empty state overlay
+1. Phase 2.1: Create /setup page with password form
+2. Phase 2.2: Implement password hashing
+3. Phase 2.3: Store password hash in settings table
+4. Phase 2.4: Create /login page
+5. Phase 2.5: Password verification logic
 
 Reference: docs/roadmap.md for full task breakdown
