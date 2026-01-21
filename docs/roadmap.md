@@ -121,15 +121,15 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 - [x] **Test**: Token appears in localStorage after login
 
 ### 2.7 Auth State Check
-- [ ] Create auth check utility
-- [ ] Check if valid session exists
-- [ ] **Test**: Function returns true/false correctly
+- [x] Create auth check utility
+- [x] Check if valid session exists
+- [x] **Test**: Function returns true/false correctly
 
 ### 2.8 Route Protection
-- [ ] Create auth middleware/wrapper
-- [ ] Redirect to `/login` if not authenticated
-- [ ] Redirect to `/setup` if no password set yet
-- [ ] **Test**: Cannot access main app without login
+- [x] Create auth middleware/wrapper
+- [x] Redirect to `/login` if not authenticated
+- [x] Redirect to `/setup` if no password set yet
+- [x] **Test**: Cannot access main app without login
 
 ### 2.9 Logout
 - [ ] Add logout button (in a corner/menu for now)

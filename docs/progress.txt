@@ -8,7 +8,7 @@ Read this file at the start of each session to maintain context and avoid repeat
 ## Current Status
 **Last Updated**: 2026-01-21
 **Current Phase**: Phase 2 In Progress
-**Next Step**: Phase 2.7 - Auth State Check
+**Next Step**: Phase 2.9 - Logout
 
 ---
 
@@ -72,6 +72,19 @@ Read this file at the start of each session to maintain context and avoid repeat
   - Added isAuthenticated() helper to check if session exists
   - Login page now generates and stores token on successful authentication
   - Token is cryptographically secure and collision-resistant
+- [x] 2.7 Auth State Check - src/lib/auth.ts
+  - Already implemented in Phase 2.6 with isAuthenticated() function
+  - Checks if session token exists in localStorage
+  - Returns boolean for quick auth status checks
+- [x] 2.8 Route Protection - src/components/AuthGuard.tsx
+  - Created AuthGuard component to protect routes
+  - Checks if password is set via isPasswordSet() server action
+  - Redirects to /setup if no password exists
+  - Checks authentication status via isAuthenticated()
+  - Redirects to /login if not authenticated
+  - Shows loading spinner during auth check
+  - Wrapped root layout with AuthGuard for app-wide protection
+  - Public routes (/setup, /login) bypass auth check
 
 ---
 
@@ -153,6 +166,13 @@ Read this file at the start of each session to maintain context and avoid repeat
 ### 2026-01-21 (Phase 2.6)
 - Modified: src/lib/auth.ts (added session token functions)
 - Modified: src/app/login/page.tsx (generate and store token on login)
+
+### 2026-01-21 (Phase 2.7)
+- Already completed in Phase 2.6 (isAuthenticated function)
+
+### 2026-01-21 (Phase 2.8)
+- Created: src/components/AuthGuard.tsx (route protection component)
+- Modified: src/app/layout.tsx (wrapped with AuthGuard)
 
 ---
 
