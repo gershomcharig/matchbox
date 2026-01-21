@@ -1,0 +1,92 @@
+# Matchbox Development Progress
+
+This file tracks accomplishments, failures, and learnings across execution loops.
+Read this file at the start of each session to maintain context and avoid repeating mistakes.
+
+---
+
+## Current Status
+**Last Updated**: 2026-01-21
+**Current Phase**: Phase 0 Complete, Ready for Phase 1
+**Next Step**: Phase 1.1 - Mapbox Setup
+
+---
+
+## Completed Tasks
+
+### Phase 0: Project Setup (COMPLETE)
+- [x] 0.1 Initialize Next.js with App Router (commit: 1b205b7)
+- [x] 0.2 Tailwind CSS configured and tested
+- [x] 0.3 Environment & Git setup (.env.local.example created)
+- [x] 0.4 Project structure created (components/, lib/, app/)
+- [x] 0.5 Supabase client setup (lib/supabase.ts) (commit: 05922ea)
+- [x] 0.6-0.9 Database schema created:
+  - settings table (key, value)
+  - collections table (id, name, color, icon, timestamps)
+  - places table (id, collection_id, name, address, lat, lng, google_maps_url, rating, opening_hours, website, phone, notes, timestamps, deleted_at)
+  - tags table (id, name)
+  - place_tags junction table (place_id, tag_id)
+
+---
+
+## Decisions Made
+
+### Database
+- Using Supabase (PostgreSQL) with free tier
+- All tables created via Supabase dashboard/SQL editor
+- Foreign key from places.collection_id → collections.id
+- Soft delete via deleted_at timestamp on places
+
+### Project Structure
+- /app - Next.js App Router pages
+- /components - React components
+- /lib - Utility functions (supabase.ts, etc.)
+- /docs - Documentation (roadmap.md, PRD.md, progress.txt)
+
+---
+
+## Blockers Encountered
+
+(None yet - document any blockers here with attempted solutions)
+
+---
+
+## Failed Approaches
+
+(Document approaches that didn't work to avoid repeating them)
+
+Example format:
+```
+### [Date] - [What was attempted]
+**Problem**: Description of what went wrong
+**Why it failed**: Root cause analysis
+**Better approach**: What to do instead
+```
+
+---
+
+## Files Changed Log
+
+### 2026-01-21
+- Created: docs/progress.txt (this file)
+- Modified: CLAUDE.md (added progress tracking instructions)
+
+(Add entries as work progresses)
+
+---
+
+## Learnings
+
+(Document technical insights, gotchas, and tips discovered during development)
+
+---
+
+## Next Steps (from roadmap.md)
+
+1. Phase 1.1: Get Mapbox API key, add to .env.local, install mapbox-gl and react-map-gl
+2. Phase 1.2: Create components/Map.tsx with basic Mapbox map centered on London
+3. Phase 1.3: Style map to fill viewport
+4. Phase 1.4: Create responsive layout shell
+5. Phase 1.5: Add empty state overlay
+
+Reference: docs/roadmap.md for full task breakdown

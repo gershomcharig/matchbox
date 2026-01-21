@@ -185,3 +185,35 @@ All requirements gathered through extensive Q&A:
 2. Get Mapbox API key (user has account)
 3. Configure Supabase tables per schema above
 4. Set up Vercel project linked to GitHub repo
+
+## Progress Tracking (IMPORTANT)
+
+**File**: `docs/progress.txt`
+
+This file serves as persistent memory across execution loops to prevent context rot and avoid repeating mistakes.
+
+### When to Read
+- **Always** read `docs/progress.txt` at the start of each new task or session
+- Before starting any roadmap step, check what was previously completed
+- When encountering an error, check if it was already encountered before
+
+### When to Update
+- After completing each roadmap step
+- When encountering a blocker or failed approach
+- When making significant decisions
+- When changing multiple files
+
+### What to Record
+1. **Completed tasks**: Mark roadmap items done with commit refs
+2. **Decisions made**: Document architectural choices and why
+3. **Blockers encountered**: What went wrong and attempted solutions
+4. **Failed approaches**: What didn't work and why (critical for avoiding repeated mistakes)
+5. **Files changed**: Brief log of modifications
+6. **Next steps**: What to work on next based on roadmap
+
+### Why This Matters
+- Prevents redoing work that was already completed
+- Avoids repeating approaches that already failed
+- Maintains context when switching between sessions
+- Helps identify patterns in what's working and what isn't
+- Makes it easier to pick up where you left off
