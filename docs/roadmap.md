@@ -147,9 +147,9 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 - [x] **Test**: Color picker renders, selection works
 
 ### 3.2 Icon Set Curation
-- [ ] Install `lucide-react`
-- [ ] Curate ~50-80 place-related icons (list of icon names)
-- [ ] **Test**: Can import and render selected icons
+- [x] Install `lucide-react`
+- [x] Curate ~50-80 place-related icons (list of icon names)
+- [x] **Test**: Can import and render selected icons
 
 ### 3.3 Icon Picker Component
 - [ ] Create icon picker (grid of icons)

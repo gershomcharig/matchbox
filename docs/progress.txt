@@ -8,7 +8,7 @@ Read this file at the start of each session to maintain context and avoid repeat
 ## Current Status
 **Last Updated**: 2026-01-21
 **Current Phase**: Phase 3 IN PROGRESS
-**Next Step**: Phase 3.2 - Icon Set Curation
+**Next Step**: Phase 3.3 - Icon Picker Component
 
 ---
 
@@ -20,6 +20,12 @@ Read this file at the start of each session to maintain context and avoid repeat
   - ColorPicker component: 8-column grid, selection state with checkmark, hover/focus animations
   - Helper functions: findColorByValue(), getContrastColor()
   - Default color: Amber (matches app accent)
+- [x] 3.2 Icon Set Curation - src/lib/icons.ts
+  - lucide-react already installed from Phase 2.1
+  - 76 curated place-related icons organized by category
+  - Categories: General, Food & Drink, Shopping, Entertainment, Recreation, Travel, Health, Education, Home, Nature, Services
+  - Helper functions: findIconByName(), getIconCategories(), getIconsByCategory()
+  - Default icon: MapPin
 
 ### Phase 0: Project Setup (COMPLETE)
 - [x] 0.1 Initialize Next.js with App Router (commit: 1b205b7)
@@ -194,6 +200,9 @@ Read this file at the start of each session to maintain context and avoid repeat
 - Created: src/lib/colors.ts (16 preset colors for collection pins)
 - Created: src/components/ColorPicker.tsx (color swatch grid with selection)
 
+### 2026-01-21 (Phase 3.2)
+- Created: src/lib/icons.ts (76 curated place-related icons)
+
 ---
 
 ## Learnings
@@ -219,8 +228,8 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ## Next Steps (from roadmap.md)
 
-1. Phase 3.2: Icon Set Curation (install lucide-react, curate 50-80 place icons)
-2. Phase 3.3: Icon Picker Component
+1. Phase 3.3: Icon Picker Component
+2. Phase 3.4: Create Collection - UI (modal/dialog)
 3. Phase 3.4: Create Collection - UI (modal/dialog)
 4. Phase 3.5: Create Collection - Save to database
 5. Phase 3.6-3.8: Fetch, display collections, default collection
