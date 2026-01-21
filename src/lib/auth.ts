@@ -107,3 +107,65 @@ export async function verifyPassword(password: string, storedHash: string): Prom
 
   return result === 0;
 }
+
+/**
+ * Session token management
+ */
+const SESSION_TOKEN_KEY = 'matchbox_session_token';
+const TOKEN_LENGTH = 32; // 32 bytes = 256 bits
+
+/**
+ * Generate a cryptographically secure session token
+ * Returns a URL-safe base64 string
+ */
+export function generateSessionToken(): string {
+  const tokenBytes = crypto.getRandomValues(new Uint8Array(TOKEN_LENGTH));
+  const tokenHex = bufferToHex(tokenBytes);
+
+  // Convert to base64url for URL-safe storage
+  const base64 = btoa(
+    String.fromCharCode.apply(null, Array.from(tokenBytes))
+  );
+
+  // Make it URL-safe: replace + with -, / with _, and remove =
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+/**
+ * Store session token in localStorage
+ * @param token - The session token to store
+ */
+export function setSessionToken(token: string): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(SESSION_TOKEN_KEY, token);
+  }
+}
+
+/**
+ * Retrieve session token from localStorage
+ * @returns The session token or null if not found
+ */
+export function getSessionToken(): string | null {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(SESSION_TOKEN_KEY);
+  }
+  return null;
+}
+
+/**
+ * Clear session token from localStorage
+ */
+export function clearSessionToken(): void {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(SESSION_TOKEN_KEY);
+  }
+}
+
+/**
+ * Check if user has a valid session
+ * For now, just checks if token exists
+ * Later phases will add server-side validation
+ */
+export function isAuthenticated(): boolean {
+  return getSessionToken() !== null;
+}

@@ -116,9 +116,9 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 - [x] **Test**: Wrong password shows error, correct password passes
 
 ### 2.6 Session Token
-- [ ] On successful login, generate session token
-- [ ] Store token in localStorage
-- [ ] **Test**: Token appears in localStorage after login
+- [x] On successful login, generate session token
+- [x] Store token in localStorage
+- [x] **Test**: Token appears in localStorage after login
 
 ### 2.7 Auth State Check
 - [ ] Create auth check utility

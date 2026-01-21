@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Eye, EyeOff, Lock, AlertCircle } from 'lucide-react';
 import { verifyPasswordAction } from './actions';
+import { generateSessionToken, setSessionToken } from '@/lib/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,8 +24,11 @@ export default function LoginPage() {
       const result = await verifyPasswordAction(password);
 
       if (result.success) {
-        // TODO: Set session token (Phase 2.6)
-        // For now, just redirect to main page
+        // Generate and store session token
+        const token = generateSessionToken();
+        setSessionToken(token);
+
+        // Redirect to main page
         router.push('/');
       } else {
         setError(result.error || 'Login failed');
