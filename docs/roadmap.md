@@ -628,9 +628,9 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 ## Phase 16: Deployment
 
 ### 16.1 Vercel Setup
-- [ ] Connect repo to Vercel
-- [ ] Configure environment variables
-- [ ] **Test**: Build succeeds
+- [x] Connect repo to Vercel
+- [x] Configure environment variables
+- [x] **Test**: Build succeeds
 
 ### 16.2 Production Test
 - [ ] Test deployed app
