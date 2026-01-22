@@ -7,12 +7,64 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ## Current Status
 **Last Updated**: 2026-01-22
-**Current Phase**: Phase 8 COMPLETE
-**Next Step**: Phase 9.1 - Filter by Collection UI
+**Current Phase**: Phase 10 COMPLETE
+**Next Step**: Phase 11.1 - Desktop Right-Click Menu
 
 ---
 
 ## Completed Tasks
+
+### Phase 10: List View (COMPLETE)
+- [x] 10.1 View Toggle - src/components/ViewToggle.tsx
+  - Map/List toggle button component
+  - Styled with amber highlight for active view
+  - Icons for Map and List views
+  - Positioned bottom-left on mobile, near filter bar on desktop
+- [x] 10.2 List View Component - src/components/ListView.tsx
+  - Full list view layout with grouping by collection
+  - Collection headers with color accent border
+  - Empty state when no places to show
+- [x] 10.3 List Item Styling
+  - Place name, address, and date added
+  - Collection color indicator dot
+  - Hover and selection states
+  - Responsive layout with truncation
+- [x] 10.4 Sort by Date
+  - Sort dropdown with "Newest first" and "Oldest first" options
+  - Uses created_at timestamp for sorting
+- [x] 10.5 Sort Alphabetically
+  - "A to Z" and "Z to A" sort options
+  - Uses localeCompare for proper string sorting
+- [x] 10.6 Click to Open Details
+  - Clicking list item opens place details panel
+  - Selected place highlighted in list
+  - Same panel used as map view
+
+### Phase 9: Filtering & Search (COMPLETE)
+- [x] 9.1-9.2 Collection Filter - src/components/FilterBar.tsx
+  - Collection dropdown with multi-select
+  - Shows collection color/icon swatches
+  - Filter badge shows active filter count
+  - Updates map markers to show only selected collections
+- [x] 9.3-9.4 Tag Filter
+  - Tag dropdown with multi-select
+  - AND logic - place must have ALL selected tags
+  - Populates with all tags in the system
+  - Filter badge shows active filter count
+- [x] 9.5 Clear Filters
+  - "Clear" button appears when any filter is active
+  - Resets collections, tags, and search query
+- [x] 9.6 Clickable Collection
+  - Clicking collection in place panel sets collection filter
+  - Closes panel and filters map to that collection
+- [x] 9.7 Clickable Tags
+  - Clicking tag in place panel adds tag to filter
+  - Accumulates with existing tag filters (AND logic)
+- [x] 9.8-9.9 Search Bar
+  - Search input in filter bar
+  - Searches place names, addresses, notes, tags, and collection names
+  - Clear button to reset search
+  - Real-time filtering as you type
 
 ### Phase 8: Collections Management (COMPLETE)
 - [x] 8.1 Edit Collection UI - src/components/EditCollectionModal.tsx
@@ -600,6 +652,18 @@ Read this file at the start of each session to maintain context and avoid repeat
 - Modified: src/components/Map.tsx (added focusCollectionId, focusTrigger props)
 - Modified: src/app/page.tsx (added handleFocusCollection, focusCollectionId state)
 
+### 2026-01-22 (Phase 9.1-9.9 & Phase 10.1-10.6)
+- Created: src/components/FilterBar.tsx (collection/tag filter dropdowns, search bar, clear button)
+- Created: src/components/ViewToggle.tsx (map/list view toggle button)
+- Created: src/components/ListView.tsx (list view with grouping, sorting, item selection)
+- Modified: src/app/page.tsx (integrated filters, search, view toggle, list view)
+  - Added filter state (selectedCollections, selectedTags, searchQuery)
+  - Added placeTagsMap for efficient tag filtering
+  - Added filteredPlaces memoized computation
+  - Added viewMode state for map/list toggle
+  - Connected collection/tag clicks in panel to filter actions
+  - Parallel data fetching for places, collections, and tags
+
 ---
 
 ## Learnings
@@ -625,12 +689,12 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ## Next Steps (from roadmap.md)
 
-1. Phase 9.1: Filter by Collection UI
-2. Phase 9.2: Filter by Collection Logic
-3. Phase 9.3: Filter by Tag UI
-4. Phase 9.4: Filter by Tag Logic
-5. Phase 9.5: Clear Filters
-6. Phase 9.6-9.7: Wire Up Clickable Collection/Tags
-7. Phase 9.8-9.9: Search Bar
+1. Phase 11.1: Desktop Right-Click Menu
+2. Phase 11.2: Mobile Long-Press Menu
+3. Phase 11.3: Context Menu Actions
+4. Phase 12: Manual Place Entry
+5. Phase 13: Duplicate Detection
+6. Phase 14: Export & Import
+7. Phase 15: PWA & Share Sheet
 
 Reference: docs/roadmap.md for full task breakdown

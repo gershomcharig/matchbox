@@ -423,77 +423,77 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 ## Phase 9: Filtering & Search
 
 ### 9.1 Filter by Collection - UI
-- [ ] Add collection filter dropdown
-- [ ] **Test**: Dropdown shows all collections
+- [x] Add collection filter dropdown
+- [x] **Test**: Dropdown shows all collections
 
 ### 9.2 Filter by Collection - Logic
-- [ ] Filter displayed places by selected collection
-- [ ] Update map markers
-- [ ] **Test**: Only selected collection's places visible
+- [x] Filter displayed places by selected collection
+- [x] Update map markers
+- [x] **Test**: Only selected collection's places visible
 
 ### 9.3 Filter by Tag - UI
-- [ ] Add tag filter dropdown (or multi-select)
-- [ ] Populate with all used tags
-- [ ] **Test**: Dropdown shows all tags
+- [x] Add tag filter dropdown (or multi-select)
+- [x] Populate with all used tags
+- [x] **Test**: Dropdown shows all tags
 
 ### 9.4 Filter by Tag - Logic
-- [ ] Filter places by selected tag(s)
-- [ ] AND logic when multiple filters
-- [ ] **Test**: Filtering works correctly
+- [x] Filter places by selected tag(s)
+- [x] AND logic when multiple filters
+- [x] **Test**: Filtering works correctly
 
 ### 9.5 Clear Filters
-- [ ] Add "Clear filters" button
-- [ ] Reset to show all places
-- [ ] **Test**: Clear restores all places
+- [x] Add "Clear filters" button
+- [x] Reset to show all places
+- [x] **Test**: Clear restores all places
 
 ### 9.6 Wire Up Clickable Collection
-- [ ] Clicking collection name in place panel → filters by that collection
-- [ ] **Test**: Click collection → map filtered
+- [x] Clicking collection name in place panel → filters by that collection
+- [x] **Test**: Click collection → map filtered
 
 ### 9.7 Wire Up Clickable Tags
-- [ ] Clicking tag in place panel → filters by that tag
-- [ ] **Test**: Click tag → map filtered
+- [x] Clicking tag in place panel → filters by that tag
+- [x] **Test**: Click tag → map filtered
 
 ### 9.8 Search Bar - UI
-- [ ] Add search input
-- [ ] **Test**: Search bar visible
+- [x] Add search input
+- [x] **Test**: Search bar visible
 
 ### 9.9 Search - Logic
-- [ ] Search place names, notes, tags
-- [ ] Update displayed results
-- [ ] **Test**: Search finds matching places
+- [x] Search place names, notes, tags
+- [x] Update displayed results
+- [x] **Test**: Search finds matching places
 
 ---
 
 ## Phase 10: List View
 
 ### 10.1 View Toggle
-- [ ] Add map/list toggle button
-- [ ] Track current view in state
-- [ ] **Test**: Toggle button works
+- [x] Add map/list toggle button
+- [x] Track current view in state
+- [x] **Test**: Toggle button works
 
 ### 10.2 List View Component
-- [ ] Create list view layout
-- [ ] Group places by collection
-- [ ] **Test**: Places shown in list format
+- [x] Create list view layout
+- [x] Group places by collection
+- [x] **Test**: Places shown in list format
 
 ### 10.3 List Item
-- [ ] Show place name, address, collection color/icon
-- [ ] **Test**: Items display correctly
+- [x] Show place name, address, collection color/icon
+- [x] **Test**: Items display correctly
 
 ### 10.4 Sort by Date
-- [ ] Add sort dropdown
-- [ ] Sort by date added (newest/oldest)
-- [ ] **Test**: Sorting works
+- [x] Add sort dropdown
+- [x] Sort by date added (newest/oldest)
+- [x] **Test**: Sorting works
 
 ### 10.5 Sort Alphabetically
-- [ ] Add A-Z / Z-A sort options
-- [ ] **Test**: Alpha sort works
+- [x] Add A-Z / Z-A sort options
+- [x] **Test**: Alpha sort works
 
 ### 10.6 Click to Open Details
-- [ ] Click list item → open place details panel
-- [ ] (Or switch to map and highlight)
-- [ ] **Test**: Click works
+- [x] Click list item → open place details panel
+- [x] (Or switch to map and highlight)
+- [x] **Test**: Click works
 
 ---
 
