@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#ea580c"/>
+    </linearGradient>
+    <linearGradient id="pinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#fef3c7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Main background -->
+  <rect width="512" height="512" rx="108" fill="url(#bgGradient)"/>
+
+  <!-- Map pin shape -->
+  <path d="M256 80C186.144 80 130 136.144 130 206C130 293.5 256 432 256 432C256 432 382 293.5 382 206C382 136.144 325.856 80 256 80Z" fill="url(#pinGradient)" stroke="white" stroke-width="8"/>
+
+  <!-- Inner circle (map pin center) -->
+  <circle cx="256" cy="200" r="56" fill="url(#bgGradient)" stroke="white" stroke-width="4"/>
+
+  <!-- Bookmark/match lines inside circle -->
+  <rect x="232" y="172" width="12" height="56" rx="3" fill="white"/>
+  <rect x="252" y="172" width="12" height="56" rx="3" fill="white"/>
+  <rect x="272" y="172" width="12" height="40" rx="3" fill="white"/>
+</svg>

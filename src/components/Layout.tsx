@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Plus, Layers, Trash2, MapPinPlus } from 'lucide-react';
+import { LogOut, Plus, Layers, Trash2, MapPinPlus, ClipboardPaste } from 'lucide-react';
 import { clearSessionToken } from '@/lib/auth';
 import { detectMapsUrl, extractCoordinatesFromUrl, extractPlaceNameFromUrl } from '@/lib/maps';
 import { reverseGeocode } from '@/lib/geocoding';
@@ -11,6 +11,7 @@ import EditCollectionModal from './EditCollectionModal';
 import AddPlaceModal, { type ExtractedPlace } from './AddPlaceModal';
 import ManualPlaceModal from './ManualPlaceModal';
 import DuplicateWarningModal from './DuplicateWarningModal';
+import { InstallPrompt } from './InstallPrompt';
 import CollectionsList from './CollectionsList';
 import { createCollection, updateCollection, deleteCollection, getCollectionPlaceCounts, type Collection } from '@/app/actions/collections';
 import { createPlace, updatePlaceTags, checkForDuplicates, type PlaceWithCollection } from '@/app/actions/places';
@@ -25,9 +26,13 @@ interface LayoutProps {
   onPlaceAdded?: () => void;
   /** Callback when focus on collection is requested */
   onFocusCollection?: (collectionId: string) => void;
+  /** Shared place data from PWA share target */
+  sharedPlace?: ExtractedPlace | null;
+  /** Callback to clear shared place after handling */
+  onSharedPlaceHandled?: () => void;
 }
 
-export default function Layout({ children, sidePanel, onCollectionSelected, onPlaceAdded, onFocusCollection }: LayoutProps) {
+export default function Layout({ children, sidePanel, onCollectionSelected, onPlaceAdded, onFocusCollection, sharedPlace, onSharedPlaceHandled }: LayoutProps) {
   const router = useRouter();
   const [isNewCollectionOpen, setIsNewCollectionOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -385,6 +390,97 @@ export default function Layout({ children, sidePanel, onCollectionSelected, onPl
     handleCloseDuplicateWarning();
   };
 
+  // Handle shared place from PWA share target
+  useEffect(() => {
+    if (sharedPlace) {
+      console.log('[Shared Place Received]', sharedPlace);
+      setExtractedPlace(sharedPlace);
+      setIsAddPlaceOpen(true);
+      onSharedPlaceHandled?.();
+    }
+  }, [sharedPlace, onSharedPlaceHandled]);
+
+  // Handle paste button click (for mobile)
+  const handlePasteButtonClick = async () => {
+    try {
+      // Request clipboard permission and read text
+      const text = await navigator.clipboard.readText();
+      console.log('[Paste Button Clicked]', text);
+
+      if (text) {
+        // Check if it's a Google Maps URL
+        const detection = detectMapsUrl(text);
+
+        if (detection.isValid && detection.url) {
+          console.log('[Google Maps URL Detected]', detection.url);
+
+          // Extract place name from URL (if available)
+          const urlPlaceName = extractPlaceNameFromUrl(detection.url);
+
+          // Extract coordinates from URL
+          const coordinates = extractCoordinatesFromUrl(detection.url);
+
+          if (coordinates) {
+            console.log('[Coordinates Extracted]', coordinates);
+
+            // Reverse geocode to get place information
+            const placeInfo = await reverseGeocode(coordinates);
+
+            if (placeInfo) {
+              const finalName = urlPlaceName || placeInfo.name;
+
+              const extractedPlaceData: ExtractedPlace = {
+                name: finalName,
+                address: placeInfo.address,
+                lat: placeInfo.lat,
+                lng: placeInfo.lng,
+                googleMapsUrl: detection.url,
+                urlExtractedName: urlPlaceName || null,
+                geocodedName: placeInfo.name,
+                displayName: placeInfo.displayName,
+                placeType: placeInfo.placeType || null,
+                city: placeInfo.city || null,
+                country: placeInfo.country || null,
+              };
+
+              setExtractedPlace(extractedPlaceData);
+              setIsAddPlaceOpen(true);
+            } else if (urlPlaceName) {
+              // Partial data fallback
+              const partialPlaceData: ExtractedPlace = {
+                name: urlPlaceName,
+                address: 'Address not available',
+                lat: coordinates.lat,
+                lng: coordinates.lng,
+                googleMapsUrl: detection.url,
+                urlExtractedName: urlPlaceName,
+                geocodedName: undefined,
+                displayName: undefined,
+                placeType: null,
+                city: null,
+                country: null,
+              };
+              setExtractedPlace(partialPlaceData);
+              setIsAddPlaceOpen(true);
+              showToast('error', 'Could not get full address info. You can still save the place.');
+            } else {
+              showToast('error', 'Could not get place information. Please try again or add manually.');
+            }
+          } else {
+            showToast('error', 'Could not find location in URL. Try a different Google Maps link.');
+          }
+        } else {
+          showToast('error', 'No Google Maps link found in clipboard. Copy a link first!');
+        }
+      } else {
+        showToast('error', 'Clipboard is empty. Copy a Google Maps link first!');
+      }
+    } catch (error) {
+      console.error('[Paste Button Error]', error);
+      showToast('error', 'Could not read clipboard. Please paste manually (Ctrl+V or Cmd+V).');
+    }
+  };
+
   // Global paste event listener
   useEffect(() => {
     const handlePaste = async (event: ClipboardEvent) => {
@@ -636,6 +732,21 @@ export default function Layout({ children, sidePanel, onCollectionSelected, onPl
             refreshTrigger={collectionsRefreshTrigger}
           />
         )}
+      </div>
+
+      {/* Install Prompt */}
+      <InstallPrompt />
+
+      {/* Mobile Paste Button - floating at bottom center */}
+      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-20">
+        <button
+          onClick={handlePasteButtonClick}
+          className="flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold shadow-xl shadow-amber-500/30 hover:shadow-amber-500/50 hover:from-amber-400 hover:to-orange-400 active:scale-95 transition-all"
+          title="Paste Google Maps link"
+        >
+          <ClipboardPaste className="w-5 h-5" />
+          <span>Paste Link</span>
+        </button>
       </div>
 
       {/* Toast notifications */}

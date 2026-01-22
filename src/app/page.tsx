@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Layout from '@/components/Layout';
 import Map from '@/components/Map';
 import EmptyState from '@/components/EmptyState';
@@ -20,8 +21,9 @@ import {
 } from '@/app/actions/places';
 import ContextMenu, { type ContextMenuAction } from '@/components/ContextMenu';
 import { getCollections, type Collection } from '@/app/actions/collections';
+import { type ExtractedPlace } from '@/components/AddPlaceModal';
 
-export default function Home() {
+function HomeContent() {
   // Data state
   const [places, setPlaces] = useState<PlaceWithCollection[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -59,6 +61,10 @@ export default function Home() {
     placeId: null,
   });
 
+  // Shared place from PWA share target
+  const [sharedPlace, setSharedPlace] = useState<ExtractedPlace | null>(null);
+  const searchParams = useSearchParams();
+
   // Fetch initial data on mount
   const fetchData = useCallback(async () => {
     const [placesResult, collectionsResult, tagsResult] = await Promise.all([
@@ -88,6 +94,34 @@ export default function Home() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Check for shared place from PWA share target
+  useEffect(() => {
+    const fromShare = searchParams.get('fromShare');
+    if (fromShare === 'true') {
+      // Check sessionStorage for pending shared place
+      const pendingPlace = sessionStorage.getItem('pendingSharedPlace');
+      if (pendingPlace) {
+        try {
+          const placeData = JSON.parse(pendingPlace) as ExtractedPlace;
+          console.log('[Shared Place from PWA]', placeData);
+          setSharedPlace(placeData);
+          // Clear the pending place
+          sessionStorage.removeItem('pendingSharedPlace');
+          // Clean up the URL
+          window.history.replaceState({}, '', '/');
+        } catch (error) {
+          console.error('[Failed to parse shared place]', error);
+          sessionStorage.removeItem('pendingSharedPlace');
+        }
+      }
+    }
+  }, [searchParams]);
+
+  // Handle shared place processed
+  const handleSharedPlaceHandled = useCallback(() => {
+    setSharedPlace(null);
+  }, []);
 
   // Fetch tags when a place is selected
   const fetchTagsForPlace = useCallback(async (placeId: string) => {
@@ -345,7 +379,7 @@ export default function Home() {
   const hasPlaces = places.length > 0;
 
   return (
-    <Layout onPlaceAdded={fetchData} onFocusCollection={handleFocusCollection}>
+    <Layout onPlaceAdded={fetchData} onFocusCollection={handleFocusCollection} sharedPlace={sharedPlace} onSharedPlaceHandled={handleSharedPlaceHandled}>
       {/* Filter bar and view toggle */}
       <FilterBar
         collections={collections}
@@ -421,5 +455,17 @@ export default function Home() {
         onClose={handleCloseContextMenu}
       />
     </Layout>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen w-screen flex items-center justify-center bg-zinc-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500 border-t-transparent" />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

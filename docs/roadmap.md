@@ -558,39 +558,39 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 ## Phase 14: PWA & Share Sheet
 
 ### 14.1 Manifest File
-- [ ] Create `manifest.json` with app name, theme colors
-- [ ] Link in `<head>`
-- [ ] **Test**: Chrome DevTools shows manifest
+- [x] Create `manifest.json` with app name, theme colors
+- [x] Link in `<head>`
+- [x] **Test**: Chrome DevTools shows manifest
 
 ### 14.2 App Icons
-- [ ] Create/generate icons in required sizes (192x192, 512x512, etc.)
-- [ ] Add to manifest
-- [ ] **Test**: Icons show in manifest
+- [x] Create/generate icons in required sizes (192x192, 512x512, etc.)
+- [x] Add to manifest
+- [x] **Test**: Icons show in manifest
 
 ### 14.3 Service Worker
-- [ ] Set up basic service worker (for installability)
-- [ ] Register in app
-- [ ] **Test**: SW registered in DevTools
+- [x] Set up basic service worker (for installability)
+- [x] Register in app
+- [x] **Test**: SW registered in DevTools
 
 ### 14.4 Install Prompt
-- [ ] App should be installable
-- [ ] Add "Install" instructions or prompt
-- [ ] **Test**: Can install app on Android
+- [x] App should be installable
+- [x] Add "Install" instructions or prompt
+- [x] **Test**: Can install app on Android
 
 ### 14.5 Share Target - Config
-- [ ] Add share_target to manifest
-- [ ] Configure to receive shared URLs
-- [ ] **Test**: Manifest shows share target config
+- [x] Add share_target to manifest
+- [x] Configure to receive shared URLs
+- [x] **Test**: Manifest shows share target config
 
 ### 14.6 Share Target - Handler
-- [ ] Create handler for received shared links
-- [ ] Trigger add place flow
-- [ ] **Test**: Share from Google Maps → Matchbook opens with link
+- [x] Create handler for received shared links
+- [x] Trigger add place flow
+- [x] **Test**: Share from Google Maps → Matchbook opens with link
 
 ### 14.7 Paste Button (Mobile)
-- [ ] Add visible paste button on mobile
-- [ ] On tap, read clipboard and process
-- [ ] **Test**: Paste button works on mobile
+- [x] Add visible paste button on mobile
+- [x] On tap, read clipboard and process
+- [x] **Test**: Paste button works on mobile
 
 ---
 

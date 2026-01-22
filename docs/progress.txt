@@ -7,12 +7,55 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ## Current Status
 **Last Updated**: 2026-01-22
-**Current Phase**: Phase 13 COMPLETE
-**Next Step**: Phase 14.1 - Export JSON
+**Current Phase**: Phase 14 COMPLETE
+**Next Step**: Phase 15 - Polish & Edge Cases
 
 ---
 
 ## Completed Tasks
+
+### Phase 14: PWA & Share Sheet (COMPLETE)
+- [x] 14.1 Manifest File - public/manifest.json
+  - App name, description, theme colors
+  - Icons in multiple sizes (192, 512, maskable variants)
+  - Apple web app configuration
+  - Shortcuts for quick actions
+  - Linked in layout.tsx via Next.js Metadata
+- [x] 14.2 App Icons - public/icons/
+  - Generated via scripts/generate-icons.mjs using sharp
+  - icon-192.png, icon-512.png (standard)
+  - icon-maskable-192.png, icon-maskable-512.png (safe zone)
+  - apple-touch-icon.png (180x180)
+  - favicon-16.png, favicon-32.png
+  - icon.svg (source file)
+- [x] 14.3 Service Worker - public/sw.js
+  - Cache-first strategy for static assets
+  - Network-first with cache fallback for dynamic content
+  - ServiceWorkerRegistration component registers on load
+  - Handles update detection
+- [x] 14.4 Install Prompt - src/components/InstallPrompt.tsx
+  - Listens for beforeinstallprompt event
+  - Shows install banner with app benefits
+  - Dismissible with 7-day cooldown (stored in localStorage)
+  - Hidden when already installed as PWA
+- [x] 14.5 Share Target Config - public/manifest.json
+  - share_target with action: "/share"
+  - Receives title, text, url parameters
+  - GET method for simple URL sharing
+- [x] 14.6 Share Target Handler - src/app/share/page.tsx
+  - Parses shared content from URL params
+  - Detects Google Maps URLs in shared text
+  - Extracts coordinates and place name
+  - Stores place data in sessionStorage
+  - Redirects to main app with fromShare=true
+  - Main page.tsx picks up shared place and opens AddPlaceModal
+  - Error handling for non-Maps links
+- [x] 14.7 Paste Button (Mobile) - src/components/Layout.tsx
+  - Floating "Paste Link" button at bottom center on mobile
+  - Uses navigator.clipboard.readText() API
+  - Processes pasted text same as global paste handler
+  - Error messages for empty clipboard or non-Maps URLs
+  - Gradient styling matching app theme
 
 ### Phase 13: Duplicate Detection (COMPLETE)
 - [x] 13.1 Check by Coordinates - src/app/actions/places.ts
@@ -766,11 +809,28 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ---
 
+### 2026-01-22 (Phase 14.1-14.7)
+- Created: public/manifest.json (PWA manifest with share target)
+- Created: public/sw.js (service worker)
+- Created: public/icons/icon.svg (source icon)
+- Created: public/icons/icon-192.png, icon-512.png (generated icons)
+- Created: public/icons/icon-maskable-192.png, icon-maskable-512.png (maskable icons)
+- Created: public/icons/apple-touch-icon.png, favicon-16.png, favicon-32.png
+- Created: scripts/generate-icons.mjs (icon generation script)
+- Created: scripts/generate-icons.html (alternative browser-based generator)
+- Created: src/components/ServiceWorkerRegistration.tsx (SW registration)
+- Created: src/components/InstallPrompt.tsx (PWA install banner)
+- Created: src/app/share/page.tsx (share target handler)
+- Modified: src/app/layout.tsx (manifest link, viewport, SW registration)
+- Modified: src/app/page.tsx (shared place handling, Suspense wrapper)
+- Modified: src/components/Layout.tsx (paste button, shared place props)
+
+---
+
 ## Next Steps (from roadmap.md)
 
-1. Phase 14: PWA & Share Sheet
-2. Phase 15: Polish & Edge Cases
-3. Phase 16: Deployment
+1. Phase 15: Polish & Edge Cases
+2. Phase 16: Deployment
 
 Note: Export & Import moved to future features.
 
