@@ -304,3 +304,42 @@ export function extractPlaceNameFromUrl(url: string): string | null {
     return null;
   }
 }
+
+/**
+ * Cleans a place name for better geocoding results
+ * 
+ * Removes address components, categories, and other noise that might
+ * prevent Nominatim from finding a match.
+ * 
+ * Example:
+ * "Lina Stores Soho - Italian Restaurant, 51 Greek St..." -> "Lina Stores Soho"
+ * "Noble Rot Soho, 2 Greek St..." -> "Noble Rot Soho"
+ * 
+ * @param name - The raw place name
+ * @returns The cleaned name
+ */
+export function cleanPlaceNameForGeocoding(name: string): string | null {
+  if (!name || typeof name !== 'string') {
+    return null;
+  }
+
+  let clean = name;
+
+  // 1. Split by comma and take first part (often separates Name from Address)
+  if (clean.includes(',')) {
+    clean = clean.split(',')[0];
+  }
+
+  // 2. Split by " - " (often used for categories like " - Italian Restaurant")
+  // carefully to not split hyphenated names
+  if (clean.includes(' - ')) {
+    clean = clean.split(' - ')[0];
+  }
+
+  // 3. Remove trailing " - " or similar if any
+  clean = clean.replace(/ - .+$/, '');
+
+  clean = clean.trim();
+
+  return clean.length > 0 ? clean : null;
+}

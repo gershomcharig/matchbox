@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MapPin, Loader2, AlertCircle, ExternalLink } from 'lucide-react';
-import { detectMapsUrl, extractCoordinatesFromUrl, extractPlaceNameFromUrl, isShortenedMapsUrl } from '@/lib/maps';
+import { detectMapsUrl, extractCoordinatesFromUrl, extractPlaceNameFromUrl, isShortenedMapsUrl, cleanPlaceNameForGeocoding } from '@/lib/maps';
 import { expandShortenedMapsUrl } from '@/app/actions/urls';
 import { reverseGeocode, forwardGeocode } from '@/lib/geocoding';
 
@@ -67,7 +67,15 @@ function ShareContent() {
         // Fallback: Try to use the place name if available (common for shared links without coordinates)
         if (urlPlaceName) {
           setMessage('Looking up place location...');
-          const placeInfo = await forwardGeocode(urlPlaceName);
+          let placeInfo = await forwardGeocode(urlPlaceName);
+
+          if (!placeInfo) {
+            const cleanedName = cleanPlaceNameForGeocoding(urlPlaceName);
+            if (cleanedName && cleanedName !== urlPlaceName) {
+              console.log('[Geocoding failed, trying cleaned name]', cleanedName);
+              placeInfo = await forwardGeocode(cleanedName);
+            }
+          }
 
           if (placeInfo) {
             const placeData = {

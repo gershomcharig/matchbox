@@ -4,7 +4,7 @@ import { ReactNode, useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LogOut, Layers, MapPinPlus, ClipboardPaste } from 'lucide-react';
 import { clearSessionToken } from '@/lib/auth';
-import { detectMapsUrl, extractCoordinatesFromUrl, extractPlaceNameFromUrl, isShortenedMapsUrl } from '@/lib/maps';
+import { detectMapsUrl, extractCoordinatesFromUrl, extractPlaceNameFromUrl, isShortenedMapsUrl, cleanPlaceNameForGeocoding } from '@/lib/maps';
 import { expandShortenedMapsUrl } from '@/app/actions/urls';
 import { reverseGeocode } from '@/lib/geocoding';
 import NewCollectionModal from './NewCollectionModal';
@@ -558,7 +558,17 @@ export default function Layout({
               console.log('[No coordinates, trying geocoding with name]', urlPlaceName);
               showToast('info', `Found "${urlPlaceName}", looking up location...`);
 
-              const placeInfo = await forwardGeocode(urlPlaceName);
+              // Try full name first
+              let placeInfo = await forwardGeocode(urlPlaceName);
+
+              // If fails, try cleaned name
+              if (!placeInfo) {
+                const cleanedName = cleanPlaceNameForGeocoding(urlPlaceName);
+                if (cleanedName && cleanedName !== urlPlaceName) {
+                  console.log('[Geocoding failed, trying cleaned name]', cleanedName);
+                  placeInfo = await forwardGeocode(cleanedName);
+                }
+              }
 
               if (placeInfo) {
                 const extractedPlaceData: ExtractedPlace = {
@@ -695,7 +705,17 @@ export default function Layout({
               console.log('[No coordinates, trying geocoding with name]', urlPlaceName);
               showToast('info', `Found "${urlPlaceName}", looking up location...`);
 
-              const placeInfo = await forwardGeocode(urlPlaceName);
+              // Try full name first
+              let placeInfo = await forwardGeocode(urlPlaceName);
+
+              // If fails, try cleaned name
+              if (!placeInfo) {
+                const cleanedName = cleanPlaceNameForGeocoding(urlPlaceName);
+                if (cleanedName && cleanedName !== urlPlaceName) {
+                  console.log('[Geocoding failed, trying cleaned name]', cleanedName);
+                  placeInfo = await forwardGeocode(cleanedName);
+                }
+              }
 
               if (placeInfo) {
                 const extractedPlaceData: ExtractedPlace = {
