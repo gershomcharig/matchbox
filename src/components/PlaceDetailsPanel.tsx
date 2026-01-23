@@ -281,9 +281,9 @@ export default function PlaceDetailsPanel({
         isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
-      {/* Backdrop */}
+      {/* Backdrop (transparent, just for click-to-close) */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0"
         onClick={onClose}
       />
 

@@ -773,9 +773,9 @@ export default function Layout({
       {/* Collections Panel (slide-up) */}
       {isCollectionsOpen && (
         <div className="fixed inset-0 z-50">
-          {/* Backdrop */}
+          {/* Backdrop (transparent, just for click-to-close) */}
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0"
             onClick={() => {
               setIsCollectionsOpen(false);
               // Reset drill-down state when closing
