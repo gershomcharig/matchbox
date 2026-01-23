@@ -3,8 +3,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import CollectionsList from './CollectionsList';
 import CollectionPlacesList from './CollectionPlacesList';
+import TrashPlacesList from './TrashPlacesList';
 import { type Collection } from '@/app/actions/collections';
-import { type PlaceWithCollection } from '@/app/actions/places';
+import { type PlaceWithCollection, getDeletedPlaces } from '@/app/actions/places';
 
 interface SidePanelProps {
   places: PlaceWithCollection[];
@@ -28,21 +29,46 @@ export default function SidePanel({
   collectionsRefreshTrigger,
 }: SidePanelProps) {
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [showTrash, setShowTrash] = useState(false);
+  const [trashPlaces, setTrashPlaces] = useState<PlaceWithCollection[]>([]);
+
+  // Fetch trash places
+  const fetchTrashPlaces = useCallback(async () => {
+    const result = await getDeletedPlaces();
+    if (result.success && result.places) {
+      setTrashPlaces(result.places);
+    }
+  }, []);
 
   // When a collection is selected, filter map to that collection
   const handleSelectCollection = useCallback(
     (collection: Collection) => {
       setSelectedCollection(collection);
+      setShowTrash(false);
       onCollectionFilterChange(collection.id);
     },
     [onCollectionFilterChange]
   );
 
+  // When trash is selected
+  const handleSelectTrash = useCallback(async () => {
+    setSelectedCollection(null);
+    setShowTrash(true);
+    onCollectionFilterChange(null);
+    await fetchTrashPlaces();
+  }, [onCollectionFilterChange, fetchTrashPlaces]);
+
   // When going back, clear the collection filter
   const handleBack = useCallback(() => {
     setSelectedCollection(null);
+    setShowTrash(false);
     onCollectionFilterChange(null);
   }, [onCollectionFilterChange]);
+
+  // Handle trash places changed (restore/delete)
+  const handleTrashPlacesChanged = useCallback(async () => {
+    await fetchTrashPlaces();
+  }, [fetchTrashPlaces]);
 
   // Get places for selected collection
   const collectionPlaces = selectedCollection
@@ -60,6 +86,16 @@ export default function SidePanel({
       // For now we keep the collection view even if empty - user can go back manually
     }
   }, [collectionsRefreshTrigger, selectedCollection, places]);
+
+  if (showTrash) {
+    return (
+      <TrashPlacesList
+        places={trashPlaces}
+        onBack={handleBack}
+        onPlacesChanged={handleTrashPlacesChanged}
+      />
+    );
+  }
 
   if (selectedCollection) {
     return (
@@ -80,6 +116,7 @@ export default function SidePanel({
       onSelectCollection={handleSelectCollection}
       onEditCollection={onEditCollection}
       onFocusCollection={onFocusCollection}
+      onSelectTrash={handleSelectTrash}
       refreshTrigger={collectionsRefreshTrigger}
     />
   );

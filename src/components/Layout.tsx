@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Plus, Layers, Trash2, MapPinPlus, ClipboardPaste } from 'lucide-react';
+import { LogOut, Plus, Layers, MapPinPlus, ClipboardPaste } from 'lucide-react';
 import { clearSessionToken } from '@/lib/auth';
 import { detectMapsUrl, extractCoordinatesFromUrl, extractPlaceNameFromUrl } from '@/lib/maps';
 import { reverseGeocode } from '@/lib/geocoding';
@@ -656,16 +656,6 @@ export default function Layout({
           >
             <Plus className="w-4 h-4" />
             <span className="text-sm">New Collection</span>
-          </button>
-
-          {/* Trash button */}
-          <button
-            onClick={() => router.push('/trash')}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-lg shadow-zinc-900/5 dark:shadow-zinc-950/50"
-            title="Trash"
-          >
-            <Trash2 className="w-4 h-4" />
-            <span className="text-sm font-medium hidden sm:inline">Trash</span>
           </button>
 
           {/* Logout button */}
