@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Plus, Layers, MapPinPlus, ClipboardPaste } from 'lucide-react';
+import { LogOut, Layers, MapPinPlus, ClipboardPaste } from 'lucide-react';
 import { clearSessionToken } from '@/lib/auth';
 import { detectMapsUrl, extractCoordinatesFromUrl, extractPlaceNameFromUrl } from '@/lib/maps';
 import { reverseGeocode } from '@/lib/geocoding';
@@ -638,24 +638,14 @@ export default function Layout({
             <span className="text-sm font-medium">Collections</span>
           </button>
 
-          {/* Add Place Manually button */}
+          {/* Add Place button (primary) */}
           <button
             onClick={() => setIsManualPlaceOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-lg shadow-zinc-900/5 dark:shadow-zinc-950/50"
-            title="Add place manually"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:from-amber-400 hover:to-orange-400 transition-all"
+            title="Add place"
           >
             <MapPinPlus className="w-4 h-4" />
-            <span className="text-sm font-medium hidden sm:inline">Add Place</span>
-          </button>
-
-          {/* New Collection button */}
-          <button
-            onClick={() => setIsNewCollectionOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:from-amber-400 hover:to-orange-400 transition-all"
-            title="New Collection"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="text-sm">New Collection</span>
+            <span className="text-sm">Add Place</span>
           </button>
 
           {/* Logout button */}
