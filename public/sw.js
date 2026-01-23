@@ -1,5 +1,5 @@
 // Matchbook Service Worker
-const CACHE_NAME = 'matchbook-v1';
+const CACHE_NAME = 'matchbook-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -47,6 +47,10 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
+  // Let share target requests pass through to the page without caching
+  const url = new URL(event.request.url);
+  if (url.pathname === '/share') return;
+
   // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) return;
 
@@ -65,15 +69,4 @@ self.addEventListener('fetch', (event) => {
         return caches.match(event.request);
       })
   );
-});
-
-// Handle share target
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // Check if this is a share target request
-  if (url.pathname === '/share' && event.request.method === 'GET') {
-    // Let the page handle it - don't intercept
-    return;
-  }
 });

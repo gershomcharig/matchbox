@@ -880,6 +880,18 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ---
 
+### 2026-01-23 (Bug Fix: Android Share Target Not Appearing)
+- Modified: public/sw.js
+  - Fixed duplicate fetch event listeners - merged into a single handler
+  - Added early check for `/share` path to let share target requests pass through without caching
+  - Incremented cache version from `matchbook-v1` to `matchbook-v2` to force update
+- Root cause: Two issues:
+  1. Android reads `share_target` from manifest only at PWA install time - existing PWA installs from before share_target was added won't see it
+  2. Service worker had two fetch listeners; the first one (caching) intercepted all GET requests before the share handler could execute
+- User action required: Uninstall PWA and reinstall to pick up manifest share_target config
+
+---
+
 ## Next Steps (from roadmap.md)
 
 1. Phase 16: Deployment
