@@ -477,13 +477,18 @@ export default function Layout({
 
           // Expand shortened URLs if needed
           let finalUrl = detection.url;
+          let scrapedName: string | undefined;
+          let scrapedAddress: string | undefined;
+
           if (isShortenedMapsUrl(detection.url)) {
             console.log('[Expanding shortened URL...]');
             showToast('success', 'Expanding link...');
             const expansion = await expandShortenedMapsUrl(detection.url);
             if (expansion.success && expansion.expandedUrl) {
               finalUrl = expansion.expandedUrl;
-              console.log('[URL Expanded]', finalUrl);
+              scrapedName = expansion.scrapedName;
+              scrapedAddress = expansion.scrapedAddress;
+              console.log('[URL Expanded]', finalUrl, { scrapedName, scrapedAddress });
             } else {
               console.error('[URL Expansion Failed]', expansion.error);
               showToast('error', 'Could not expand shortened URL. Try copying the full link from Google Maps.');
@@ -502,6 +507,8 @@ export default function Layout({
             urlPlaceName,
             extractedCoordinates: extractedCoords,
             googleMapsUrl: finalUrl,
+            scrapedName,
+            scrapedAddress,
           });
 
           if (result) {
@@ -555,13 +562,18 @@ export default function Layout({
 
           // Expand shortened URLs if needed
           let finalUrl = detection.url;
+          let scrapedName: string | undefined;
+          let scrapedAddress: string | undefined;
+
           if (isShortenedMapsUrl(detection.url)) {
             console.log('[Expanding shortened URL...]');
             showToast('success', 'Expanding link...');
             const expansion = await expandShortenedMapsUrl(detection.url);
             if (expansion.success && expansion.expandedUrl) {
               finalUrl = expansion.expandedUrl;
-              console.log('[URL Expanded]', finalUrl);
+              scrapedName = expansion.scrapedName;
+              scrapedAddress = expansion.scrapedAddress;
+              console.log('[URL Expanded]', finalUrl, { scrapedName, scrapedAddress });
             } else {
               console.error('[URL Expansion Failed]', expansion.error);
               showToast('error', 'Could not expand shortened URL. Try copying the full link from Google Maps.');
@@ -580,6 +592,8 @@ export default function Layout({
             urlPlaceName,
             extractedCoordinates: extractedCoords,
             googleMapsUrl: finalUrl,
+            scrapedName,
+            scrapedAddress,
           });
 
           if (result) {

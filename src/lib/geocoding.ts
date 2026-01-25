@@ -1,11 +1,17 @@
 /**
- * Geocoding utilities for reverse geocoding using OpenStreetMap Nominatim API
+ * Geocoding utilities using OpenStreetMap Nominatim API
+ *
+ * This module provides:
+ * - forwardGeocode(): Convert address string to coordinates (for manual place entry)
+ * - smartGeocode(): Smart geocoding that prefers scraped Google Maps data
+ *
+ * Note: Reverse geocoding is no longer needed as Puppeteer scrapes exact addresses
+ * from Google Maps pages.
  *
  * Nominatim is a free geocoding service provided by OpenStreetMap.
  * Usage Policy: https://operations.osmfoundation.org/policies/nominatim/
  * - Maximum 1 request per second
  * - Must include valid User-Agent header
- * - For production, consider setting up own Nominatim instance
  */
 
 import type { Coordinates } from './maps';
@@ -65,108 +71,6 @@ interface NominatimResponse {
   type?: string;
   lat: string;
   lon: string;
-}
-
-/**
- * Reverse geocodes coordinates to get place information
- *
- * Uses OpenStreetMap Nominatim API (free, no API key required)
- * Rate limit: 1 request per second
- *
- * @param coordinates - The lat/lng coordinates to reverse geocode
- * @returns Place information or null if geocoding fails
- */
-export async function reverseGeocode(
-  coordinates: Coordinates
-): Promise<PlaceInfo | null> {
-  try {
-    const { lat, lng } = coordinates;
-
-    // Nominatim reverse geocoding endpoint
-    const url = new URL('https://nominatim.openstreetmap.org/reverse');
-    url.searchParams.set('lat', lat.toString());
-    url.searchParams.set('lon', lng.toString());
-    url.searchParams.set('format', 'json');
-    url.searchParams.set('addressdetails', '1');
-    url.searchParams.set('zoom', '18'); // Higher zoom for more precise results
-
-    // Make request with proper headers
-    const response = await fetch(url.toString(), {
-      headers: {
-        'User-Agent': 'Matchbook/1.0 (Personal place organizer)',
-      },
-    });
-
-    if (!response.ok) {
-      console.error('Nominatim API error:', response.status, response.statusText);
-      return null;
-    }
-
-    const data: NominatimResponse = await response.json();
-
-    // Extract place name (try various fields)
-    const name =
-      data.name ||
-      data.address?.amenity ||
-      data.address?.building ||
-      data.address?.shop ||
-      data.address?.tourism ||
-      data.address?.restaurant ||
-      data.address?.cafe ||
-      data.address?.pub ||
-      'Unnamed Place';
-
-    // Build formatted address
-    const addressParts: string[] = [];
-
-    if (data.address) {
-      const addr = data.address;
-
-      // Add house number and road
-      if (addr.house_number && addr.road) {
-        addressParts.push(`${addr.house_number} ${addr.road}`);
-      } else if (addr.road) {
-        addressParts.push(addr.road);
-      }
-
-      // Add suburb/neighborhood
-      if (addr.suburb) {
-        addressParts.push(addr.suburb);
-      }
-
-      // Add city/town
-      const locality = addr.city || addr.town || addr.village;
-      if (locality) {
-        addressParts.push(locality);
-      }
-
-      // Add postcode
-      if (addr.postcode) {
-        addressParts.push(addr.postcode);
-      }
-
-      // Add country
-      if (addr.country) {
-        addressParts.push(addr.country);
-      }
-    }
-
-    const address = addressParts.length > 0 ? addressParts.join(', ') : data.display_name;
-
-    return {
-      name,
-      address,
-      displayName: data.display_name,
-      lat: parseFloat(data.lat),
-      lng: parseFloat(data.lon),
-      placeType: data.type,
-      city: data.address?.city || data.address?.town || data.address?.village,
-      country: data.address?.country,
-    };
-  } catch (error) {
-    console.error('Error reverse geocoding:', error);
-    return null;
-  }
 }
 
 /**
@@ -267,14 +171,6 @@ export async function forwardGeocode(
 }
 
 /**
- * Delay helper to respect Nominatim rate limiting (1 req/sec)
- * @param ms - Milliseconds to delay
- */
-export function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
  * Result from smart geocoding
  */
 export interface SmartGeocodeResult {
@@ -282,7 +178,7 @@ export interface SmartGeocodeResult {
   address: string;
   lat: number;
   lng: number;
-  source: 'url_coords' | 'forward_geocode' | 'reverse_geocode';
+  source: 'url_coords' | 'forward_geocode';
   /** Additional place info from geocoding */
   placeInfo?: PlaceInfo;
 }
@@ -297,6 +193,10 @@ export interface SmartGeocodeOptions {
   extractedCoordinates: Coordinates | null;
   /** The original Google Maps URL */
   googleMapsUrl: string;
+  /** Place name scraped from Google Maps HTML (more accurate than URL path) */
+  scrapedName?: string;
+  /** Address scraped from Google Maps HTML (more accurate than Nominatim) */
+  scrapedAddress?: string;
 }
 
 /**
@@ -319,21 +219,34 @@ export interface SmartGeocodeOptions {
 export async function smartGeocode(
   options: SmartGeocodeOptions
 ): Promise<SmartGeocodeResult | null> {
-  const { urlPlaceName, extractedCoordinates } = options;
+  const { urlPlaceName, extractedCoordinates, scrapedName, scrapedAddress } = options;
 
   // Case 1: We have coordinates - always use them (they're from Google Maps, so accurate)
   if (extractedCoordinates) {
     console.log('[smartGeocode] Have coords from URL, using them directly');
 
-    const reverseResult = await reverseGeocode(extractedCoordinates);
+    const placeName = scrapedName || urlPlaceName || 'Unknown Place';
+    const address = scrapedAddress || 'Address not available';
+
+    if (scrapedAddress) {
+      console.log('[smartGeocode] Using scraped address from Google Maps:', scrapedAddress);
+    } else {
+      console.log('[smartGeocode] No scraped address available');
+    }
 
     return {
-      name: urlPlaceName || reverseResult?.name || 'Unknown Place',
-      address: reverseResult?.address || 'Address not available',
+      name: placeName,
+      address: address,
       lat: extractedCoordinates.lat,
       lng: extractedCoordinates.lng,
       source: 'url_coords',
-      placeInfo: reverseResult || undefined,
+      placeInfo: {
+        name: placeName,
+        address: address,
+        displayName: `${placeName}, ${address}`,
+        lat: extractedCoordinates.lat,
+        lng: extractedCoordinates.lng,
+      },
     };
   }
 

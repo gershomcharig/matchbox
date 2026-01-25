@@ -66,6 +66,49 @@ When viewing a place, display:
 - **Error handling**: If link processing fails, show error and offer manual entry fallback
 - **Duplicates**: Warn if place already exists (by coordinates or link) but allow adding anyway
 
+### How Place Data Extraction Works
+
+#### Pasting Google Maps Links
+
+When you paste a Google Maps link (desktop or mobile paste button), Matchbook extracts place data using **headless browser scraping**:
+
+1. **URL Expansion**: Shortened links (maps.app.goo.gl) are expanded to full Google Maps URLs
+2. **Page Rendering**: A headless Chrome browser (Puppeteer) loads the Google Maps page
+3. **Consent Handling**: Automatically accepts Google's GDPR consent prompt if shown
+4. **DOM Extraction**: Extracts the following from the rendered page:
+   - **Name**: From the `<h1>` element
+   - **Address**: From `button[data-item-id="address"]` (exact Google Maps address)
+   - **Phone**: From `button[data-item-id^="phone"]`
+   - **Website**: From `a[data-item-id="authority"]`
+   - **Hours**: From `button[data-item-id^="oh"]`
+5. **Coordinates**: Extracted from the URL path (e.g., `/@51.4675,-0.0494`)
+
+This approach ensures addresses match **exactly** what you see on Google Maps.
+
+**Technical note**: Uses Puppeteer with @sparticuz/chromium for Vercel serverless compatibility.
+
+#### Sharing from Google Maps (Android)
+
+On Android, you can share directly from the Google Maps app to Matchbook using the system share sheet:
+
+1. **Share Target**: The PWA registers as a share target via the Web App Manifest
+2. **Receive Link**: When you share from Google Maps, Matchbook receives the URL via `/share` route
+3. **Same Extraction**: The shared link goes through the same Puppeteer scraping process as pasted links
+4. **Add to Collection**: You're prompted to select a collection, then the place is saved
+
+**Note**: This requires installing Matchbook as a PWA on Android. iOS does not support the Share Target API.
+
+#### Manual Place Entry
+
+When adding a place manually by typing an address:
+
+1. User enters a place name and address
+2. Address is geocoded using **OpenStreetMap Nominatim API** (free, no API key)
+3. Returns latitude/longitude coordinates for the entered address
+4. Place is saved with the user-provided name and geocoded coordinates
+
+Note: Manual entry addresses are formatted by Nominatim and may differ slightly from Google Maps formatting.
+
 ### Collections Panel (Primary Navigation)
 The collections panel is the main way to explore places in list format. It opens as a slide-up panel from the bottom of the screen.
 

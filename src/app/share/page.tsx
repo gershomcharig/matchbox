@@ -42,12 +42,19 @@ function ShareContent() {
       let mapsUrl = detection.url!;
       setSharedUrl(mapsUrl);
 
+      // Variables to hold scraped data from shortened URL expansion
+      let scrapedName: string | undefined;
+      let scrapedAddress: string | undefined;
+
       // Expand shortened URLs
       if (isShortenedMapsUrl(mapsUrl)) {
         setMessage('Expanding shortened link...');
         const expansion = await expandShortenedMapsUrl(mapsUrl);
         if (expansion.success && expansion.expandedUrl) {
           mapsUrl = expansion.expandedUrl;
+          scrapedName = expansion.scrapedName;
+          scrapedAddress = expansion.scrapedAddress;
+          console.log('[Share] URL expanded with scraped data:', { scrapedName, scrapedAddress });
         } else {
           setStatus('error');
           setMessage('Could not expand shortened link. Try sharing the full URL from Google Maps.');
@@ -69,6 +76,8 @@ function ShareContent() {
         urlPlaceName,
         extractedCoordinates: extractedCoords,
         googleMapsUrl: mapsUrl,
+        scrapedName,
+        scrapedAddress,
       });
 
       if (!result) {

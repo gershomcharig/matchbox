@@ -1,0 +1,41 @@
+{
+  "description": "Test cases for Google Maps link extraction. Use these to verify the scraping implementation.",
+  "notes": [
+    "Shortened URLs (maps.app.goo.gl) are expanded and scraped for place name",
+    "Place name is extracted from embedded JavaScript data in the HTML response",
+    "Addresses come from Nominatim reverse geocoding (not scraping, as Google loads addresses dynamically)",
+    "Coordinates are extracted from the expanded URL path"
+  ],
+  "testCases": [
+    {
+      "url": "https://maps.app.goo.gl/Nw1Pwm36fTpQiGM47",
+      "expectedName": "Skehans",
+      "expectedAddress": "1 Kitto Rd, London SE14 5TW",
+      "notes": "Pub in New Cross, London"
+    },
+    {
+      "url": "https://maps.app.goo.gl/V8zTPSMGnDmE1Hjv8",
+      "expectedName": "Guacamoles",
+      "expectedAddress": "48 Rye Ln, London SE15 5BY",
+      "notes": "Mexican restaurant in Peckham"
+    },
+    {
+      "url": "https://maps.app.goo.gl/JVqAd31Hx9ztHrWZ6",
+      "expectedName": "Lao Dao",
+      "expectedAddress": "305 Walworth Rd, London SE17 2TG",
+      "notes": "Chinese restaurant in Walworth"
+    },
+    {
+      "url": "https://maps.app.goo.gl/NvwMWurdC5moXzvA7",
+      "expectedName": "Sambal Shiok Laksa Bar",
+      "expectedAddress": "171 Holloway Rd, London N7 8LX",
+      "notes": "Malaysian restaurant in Holloway"
+    },
+    {
+      "url": "https://maps.app.goo.gl/KjNxJqSZrkLx8KnP6",
+      "expectedName": "Portobello Road Market",
+      "expectedAddress": "London W11 1LJ",
+      "notes": "Famous street market in Notting Hill"
+    }
+  ]
+}

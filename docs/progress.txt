@@ -914,9 +914,86 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ---
 
+### 2026-01-25 (Enhancement: Google Maps Scraping with Puppeteer)
+- Problem: Addresses extracted via Nominatim differ from Google Maps addresses - user wants EXACT match
+- Solution: Implemented Puppeteer-based scraping to render Google Maps page and extract exact address
+
+#### Changes Made:
+- Installed: puppeteer (for headless Chrome scraping)
+- Created: src/lib/google-maps-scraper.ts
+  - `expandAndScrapeGoogleMapsUrl()` - expands shortened URLs and scrapes place data
+  - Uses Puppeteer to render the page fully (handles JavaScript-loaded content)
+  - Handles Google consent page by clicking "Accept" button
+  - Extracts from DOM: name (h1), address (button[data-item-id="address"]), phone, website, hours
+  - Singleton browser instance with auto-close after 60s inactivity
+- Modified: src/app/actions/urls.ts
+  - Added `scrapeGoogleMapsUrl()` server action for full URL scraping
+  - `expandShortenedMapsUrl()` now uses Puppeteer first, falls back to fetch if it fails
+  - Returns additional fields: scrapedPhone, scrapedWebsite, scrapedHours
+- Modified: src/lib/geocoding.ts
+  - Extended SmartGeocodeOptions with `scrapedName` and `scrapedAddress` parameters
+  - smartGeocode() uses scraped address when available, skips Nominatim call
+- Modified: src/components/Layout.tsx
+  - Updated paste handlers to pass scraped data to smartGeocode()
+- Modified: src/app/share/page.tsx
+  - Updated share target handler to pass scraped data
+- Created: docs/link-extractor-test-cases.json
+  - Test URLs with expected exact addresses from Google
+
+#### Tested Results (all exact matches):
+- Skehans → "1 Kitto Rd, London SE14 5TW"
+- Guacamoles → "48 Rye Ln, London SE15 5BY"
+- Lao Dao → "305 Walworth Rd, London SE17 2TG"
+- Sambal Shiok Laksa Bar → "171 Holloway Rd, London N7 8LX"
+
+#### Notes:
+- Puppeteer adds ~76 packages and requires headless Chrome
+- May need additional config for Vercel deployment (@sparticuz/chromium)
+- Falls back to fetch-based extraction if Puppeteer fails
+
+---
+
+### 2026-01-25 (Vercel Deployment Prep: Puppeteer + Cleanup)
+
+#### Problem: Standard Puppeteer doesn't work on Vercel serverless functions
+- Vercel's serverless environment doesn't have Chrome installed
+- Need `@sparticuz/chromium` for serverless-compatible Chromium
+
+#### Changes Made:
+
+1. **Installed dependencies:**
+   - `@sparticuz/chromium` - Serverless-compatible Chromium binary
+   - `puppeteer-core` - Puppeteer without bundled Chromium
+
+2. **Modified: src/lib/google-maps-scraper.ts**
+   - Changed import from `puppeteer` to `puppeteer-core`
+   - Added import for `@sparticuz/chromium`
+   - Updated `getBrowser()` to detect production vs development:
+     - Production: Uses `@sparticuz/chromium` with `chromium.args` and `chromium.executablePath()`
+     - Development: Uses system Chrome with platform-specific paths (macOS, Windows, Linux)
+
+3. **Modified: src/lib/geocoding.ts**
+   - Updated file header comment to reflect new purpose (forward geocoding only)
+   - Removed `reverseGeocode()` function (no longer needed - Puppeteer provides exact addresses)
+   - Removed `delay()` helper (was only used for Nominatim rate limiting)
+   - Updated `smartGeocode()` to remove reverseGeocode fallback
+   - Removed `'reverse_geocode'` from `SmartGeocodeResult.source` type
+
+4. **Modified: docs/prd.md**
+   - Added "How Place Data Extraction Works" section documenting:
+     - Puppeteer-based scraping for pasted Google Maps links
+     - DOM selectors used (h1, button[data-item-id="address"], etc.)
+     - Nominatim forward geocoding for manual place entry
+     - Note about @sparticuz/chromium for Vercel compatibility
+
+#### Verification:
+- Build passes (`npm run build`)
+
+---
+
 ## Next Steps (from roadmap.md)
 
-1. Phase 16: Deployment
+1. Phase 16: Deployment (Vercel production testing)
 
 Note: Export & Import moved to future features.
 
