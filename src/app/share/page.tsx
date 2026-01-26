@@ -3,9 +3,8 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MapPin, Loader2, AlertCircle, ExternalLink } from 'lucide-react';
-import { detectMapsUrl, extractCoordinatesFromUrl, extractPlaceNameFromUrl, isShortenedMapsUrl } from '@/lib/maps';
-import { expandShortenedMapsUrl } from '@/app/actions/urls';
-import { smartGeocode } from '@/lib/geocoding';
+import { detectMapsUrl } from '@/lib/maps';
+import { extractPlaceFromUrl } from '@/app/actions/places-api';
 
 function ShareContent() {
   const router = useRouter();
@@ -39,63 +38,33 @@ function ShareContent() {
         detection.url = urlDetection.url;
       }
 
-      let mapsUrl = detection.url!;
+      const mapsUrl = detection.url!;
       setSharedUrl(mapsUrl);
 
-      // Variables to hold scraped data from shortened URL expansion
-      let scrapedName: string | undefined;
-      let scrapedAddress: string | undefined;
-
-      // Expand shortened URLs
-      if (isShortenedMapsUrl(mapsUrl)) {
-        setMessage('Expanding shortened link...');
-        const expansion = await expandShortenedMapsUrl(mapsUrl);
-        if (expansion.success && expansion.expandedUrl) {
-          mapsUrl = expansion.expandedUrl;
-          scrapedName = expansion.scrapedName;
-          // Use scraped address, or fall back to URL-extracted address
-          scrapedAddress = expansion.scrapedAddress || expansion.urlExtractedAddress;
-          console.log('[Share] URL expanded with scraped data:', { scrapedName, scrapedAddress, urlExtractedAddress: expansion.urlExtractedAddress });
-        } else {
-          setStatus('error');
-          setMessage('Could not expand shortened link. Try sharing the full URL from Google Maps.');
-          return;
-        }
-      }
-
-      setMessage('Extracting place information...');
-
-      // Extract place name and coordinates from URL
-      const urlPlaceName = extractPlaceNameFromUrl(mapsUrl);
-      const extractedCoords = extractCoordinatesFromUrl(mapsUrl);
-
-      console.log('[Share] Extracted from URL:', { urlPlaceName, extractedCoords });
-
-      // Use smart geocoding to validate coordinates against place name
       setMessage('Getting place details...');
-      const result = await smartGeocode({
-        urlPlaceName,
-        extractedCoordinates: extractedCoords,
-        googleMapsUrl: mapsUrl,
-        scrapedName,
-        scrapedAddress,
-      });
 
-      if (!result) {
+      // Use Places API to extract place data
+      const result = await extractPlaceFromUrl(mapsUrl);
+
+      if (!result.success || !result.place) {
         setStatus('error');
-        setMessage('Could not extract location from the link.');
+        if (result.apiKeyConfigured === false) {
+          setMessage('Google Maps API key not configured.');
+        } else {
+          setMessage(result.error || 'Could not extract location from the link.');
+        }
         return;
       }
 
-      console.log('[Share] smartGeocode result:', result);
+      console.log('[Share] Places API result:', result.place);
 
       // Build the place data to pass to main app
       const placeData = {
-        name: result.name,
-        address: result.address,
-        lat: result.lat,
-        lng: result.lng,
-        googleMapsUrl: mapsUrl,
+        name: result.place.name,
+        address: result.place.address,
+        lat: result.place.lat,
+        lng: result.place.lng,
+        googleMapsUrl: result.place.googleMapsUrl,
       };
 
       // Store in sessionStorage for the main app to pick up

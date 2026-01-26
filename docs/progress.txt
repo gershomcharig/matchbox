@@ -1052,9 +1052,62 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ---
 
+### 2026-01-26 (Major Refactor: Migrate to Google Maps Places API)
+
+#### Problem
+The previous place extraction system was unreliable. Despite multiple strategies (URL coordinate parsing, Puppeteer DOM scraping, Nominatim geocoding), places still appeared in wrong locations (e.g., London place appearing in Scotland).
+
+**Root causes:**
+- URL coordinate extraction picked up viewport coordinates instead of actual place coordinates
+- Puppeteer scraping failed on consent pages
+- Nominatim reverse geocoding returned different addresses than Google Maps
+- Too many fallback strategies with inconsistent results
+
+#### Solution Implemented
+Replaced the entire extraction mechanism with **Google Maps Places API** - the authoritative source for place data.
+
+**Files Created:**
+- src/lib/google-places.ts - Places API client with:
+  - extractPlaceIdFromUrl() - Extract Place ID from various URL formats
+  - extractPlaceNameFromUrl() - Extract place name from URL path
+  - getPlaceDetails() - Fetch place details from Places API
+  - searchPlace() - Text Search API for queries without Place ID
+  - extractCoordinatesFromUrl() - Extract coords for search location bias
+
+- src/app/actions/places-api.ts - Server actions:
+  - extractPlaceFromUrl() - Main function for URL-based extraction
+  - searchPlaceByText() - For manual place entry
+
+**Files Modified:**
+- src/components/Layout.tsx - Updated paste handlers to use extractPlaceFromUrl
+- src/app/share/page.tsx - Updated share target to use extractPlaceFromUrl
+- src/app/actions/urls.ts - Simplified to only URL expansion (no Puppeteer)
+- src/lib/maps.ts - Removed coordinate extraction functions (kept URL detection)
+- .env.local.example - Added GOOGLE_MAPS_API_KEY
+- docs/prd.md - Updated extraction documentation
+
+**Files Deleted:**
+- src/lib/google-maps-scraper.ts - Puppeteer scraping (no longer needed)
+- src/lib/geocoding.ts - Nominatim geocoding (replaced by Places API)
+
+#### Benefits
+1. **Accuracy**: Place data comes directly from Google Maps
+2. **Simplicity**: Single source of truth instead of multiple fallbacks
+3. **Reliability**: No more consent page issues or DOM scraping fragility
+4. **Cost**: Within $200/month free tier (~$1-3/month for personal use)
+
+#### Verification
+- TypeScript compilation passes
+- Production build succeeds
+- All unit tests pass
+
+---
+
 ## Next Steps (from roadmap.md)
 
 1. Phase 16: Deployment (Vercel production testing)
+   - Test with GOOGLE_MAPS_API_KEY configured in Vercel
+   - Verify place extraction works with various URL types
 
 Note: Export & Import moved to future features.
 

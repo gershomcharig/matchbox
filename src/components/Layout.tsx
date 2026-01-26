@@ -4,9 +4,8 @@ import { ReactNode, useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LogOut, Layers, MapPinPlus, ClipboardPaste } from 'lucide-react';
 import { clearSessionToken } from '@/lib/auth';
-import { detectMapsUrl, extractCoordinatesFromUrl, extractPlaceNameFromUrl, isShortenedMapsUrl } from '@/lib/maps';
-import { expandShortenedMapsUrl } from '@/app/actions/urls';
-import { smartGeocode } from '@/lib/geocoding';
+import { detectMapsUrl } from '@/lib/maps';
+import { extractPlaceFromUrl, searchPlaceByText } from '@/app/actions/places-api';
 import NewCollectionModal from './NewCollectionModal';
 import EditCollectionModal from './EditCollectionModal';
 import AddPlaceModal, { type ExtractedPlace } from './AddPlaceModal';
@@ -18,7 +17,6 @@ import CollectionPlacesList from './CollectionPlacesList';
 import TrashPlacesList from './TrashPlacesList';
 import { createCollection, updateCollection, deleteCollection, getCollectionPlaceCounts, type Collection } from '@/app/actions/collections';
 import { createPlace, updatePlaceTags, checkForDuplicates, getDeletedPlaces, type PlaceWithCollection } from '@/app/actions/places';
-import { forwardGeocode } from '@/lib/geocoding'; // Used by ManualPlaceModal handler
 import { ToastContainer, generateToastId, type ToastData } from './Toast';
 
 interface LayoutProps {
@@ -324,22 +322,28 @@ export default function Layout({
     setManualPlaceError(null);
     console.log('[Saving Manual Place]', data);
 
-    // Geocode the address to get coordinates
-    const geocodeResult = await forwardGeocode(data.address);
+    // Use Places API Text Search to find the place
+    // Combine name and address for better search results
+    const searchQuery = data.name ? `${data.name}, ${data.address}` : data.address;
+    const searchResult = await searchPlaceByText(searchQuery);
 
-    if (!geocodeResult) {
-      setManualPlaceError('Could not find location for this address. Please try a different address.');
+    if (!searchResult.success || !searchResult.place) {
+      if (searchResult.apiKeyConfigured === false) {
+        setManualPlaceError('Google Maps API key not configured. Please check your environment settings.');
+      } else {
+        setManualPlaceError(searchResult.error || 'Could not find location. Please try a different address.');
+      }
       setIsAddingManualPlace(false);
       return;
     }
 
-    console.log('[Geocoded Address]', geocodeResult);
+    console.log('[Places API Search Result]', searchResult.place);
 
     // Check for duplicates
     const duplicateCheck = await checkForDuplicates(
-      geocodeResult.lat,
-      geocodeResult.lng,
-      null
+      searchResult.place.lat,
+      searchResult.place.lng,
+      searchResult.place.googleMapsUrl || null
     );
 
     if (duplicateCheck.success && duplicateCheck.isDuplicate && duplicateCheck.existingPlace) {
@@ -351,12 +355,12 @@ export default function Layout({
         type: 'manual',
         collectionId: data.collectionId,
         manualData: {
-          name: data.name,
-          address: geocodeResult.address || data.address,
+          name: data.name || searchResult.place.name,
+          address: searchResult.place.address,
           notes: data.notes,
           tags: data.tags,
-          lat: geocodeResult.lat,
-          lng: geocodeResult.lng,
+          lat: searchResult.place.lat,
+          lng: searchResult.place.lng,
         },
       });
       setIsManualPlaceOpen(false);
@@ -365,13 +369,14 @@ export default function Layout({
     }
 
     // No duplicate found, proceed with saving
+    // Use user-provided name if available, otherwise use API result
     await saveManualPlaceWithData({
-      name: data.name,
-      address: geocodeResult.address || data.address,
+      name: data.name || searchResult.place.name,
+      address: searchResult.place.address,
       notes: data.notes,
       tags: data.tags,
-      lat: geocodeResult.lat,
-      lng: geocodeResult.lng,
+      lat: searchResult.place.lat,
+      lng: searchResult.place.lng,
       collectionId: data.collectionId,
     });
   };
@@ -474,65 +479,37 @@ export default function Layout({
 
         if (detection.isValid && detection.url) {
           console.log('[Google Maps URL Detected]', detection.url);
+          showToast('success', 'Getting place details...');
 
-          // Expand shortened URLs if needed
-          let finalUrl = detection.url;
-          let scrapedName: string | undefined;
-          let scrapedAddress: string | undefined;
+          // Use Places API to extract place data
+          const result = await extractPlaceFromUrl(detection.url);
 
-          if (isShortenedMapsUrl(detection.url)) {
-            console.log('[Expanding shortened URL...]');
-            showToast('success', 'Expanding link...');
-            const expansion = await expandShortenedMapsUrl(detection.url);
-            if (expansion.success && expansion.expandedUrl) {
-              finalUrl = expansion.expandedUrl;
-              scrapedName = expansion.scrapedName;
-              // Use scraped address, or fall back to URL-extracted address
-              scrapedAddress = expansion.scrapedAddress || expansion.urlExtractedAddress;
-              console.log('[URL Expanded]', finalUrl, { scrapedName, scrapedAddress, urlExtractedAddress: expansion.urlExtractedAddress });
-            } else {
-              console.error('[URL Expansion Failed]', expansion.error);
-              showToast('error', 'Could not expand shortened URL. Try copying the full link from Google Maps.');
-              return;
-            }
-          }
-
-          // Extract place name and coordinates from URL
-          const urlPlaceName = extractPlaceNameFromUrl(finalUrl);
-          const extractedCoords = extractCoordinatesFromUrl(finalUrl);
-
-          console.log('[Extracted from URL]', { urlPlaceName, extractedCoords });
-
-          // Use smart geocoding to validate coordinates against place name
-          const result = await smartGeocode({
-            urlPlaceName,
-            extractedCoordinates: extractedCoords,
-            googleMapsUrl: finalUrl,
-            scrapedName,
-            scrapedAddress,
-          });
-
-          if (result) {
-            console.log('[smartGeocode result]', result);
+          if (result.success && result.place) {
+            console.log('[Places API result]', result.place);
 
             const extractedPlaceData: ExtractedPlace = {
-              name: result.name,
-              address: result.address,
-              lat: result.lat,
-              lng: result.lng,
-              googleMapsUrl: finalUrl,
-              urlExtractedName: urlPlaceName || null,
-              geocodedName: result.placeInfo?.name,
-              displayName: result.placeInfo?.displayName,
-              placeType: result.placeInfo?.placeType || null,
-              city: result.placeInfo?.city || null,
-              country: result.placeInfo?.country || null,
+              name: result.place.name,
+              address: result.place.address,
+              lat: result.place.lat,
+              lng: result.place.lng,
+              googleMapsUrl: result.place.googleMapsUrl,
+              urlExtractedName: null,
+              geocodedName: result.place.name,
+              displayName: `${result.place.name}, ${result.place.address}`,
+              placeType: result.place.types?.[0] || null,
+              city: null,
+              country: null,
             };
 
             setExtractedPlace(extractedPlaceData);
             setIsAddPlaceOpen(true);
           } else {
-            showToast('error', 'Could not find location in URL. Try a different Google Maps link.');
+            console.error('[Places API Failed]', result.error);
+            if (result.apiKeyConfigured === false) {
+              showToast('error', 'Google Maps API key not configured. Please check your environment settings.');
+            } else {
+              showToast('error', result.error || 'Could not find location in URL. Try a different Google Maps link.');
+            }
           }
         } else {
           showToast('error', 'No Google Maps link found in clipboard. Copy a link first!');
@@ -560,59 +537,26 @@ export default function Layout({
 
         if (detection.isValid && detection.url) {
           console.log('[Google Maps URL Detected]', detection.url);
+          showToast('success', 'Getting place details...');
 
-          // Expand shortened URLs if needed
-          let finalUrl = detection.url;
-          let scrapedName: string | undefined;
-          let scrapedAddress: string | undefined;
+          // Use Places API to extract place data
+          const result = await extractPlaceFromUrl(detection.url);
 
-          if (isShortenedMapsUrl(detection.url)) {
-            console.log('[Expanding shortened URL...]');
-            showToast('success', 'Expanding link...');
-            const expansion = await expandShortenedMapsUrl(detection.url);
-            if (expansion.success && expansion.expandedUrl) {
-              finalUrl = expansion.expandedUrl;
-              scrapedName = expansion.scrapedName;
-              // Use scraped address, or fall back to URL-extracted address
-              scrapedAddress = expansion.scrapedAddress || expansion.urlExtractedAddress;
-              console.log('[URL Expanded]', finalUrl, { scrapedName, scrapedAddress, urlExtractedAddress: expansion.urlExtractedAddress });
-            } else {
-              console.error('[URL Expansion Failed]', expansion.error);
-              showToast('error', 'Could not expand shortened URL. Try copying the full link from Google Maps.');
-              return;
-            }
-          }
-
-          // Extract place name and coordinates from URL
-          const urlPlaceName = extractPlaceNameFromUrl(finalUrl);
-          const extractedCoords = extractCoordinatesFromUrl(finalUrl);
-
-          console.log('[Extracted from URL]', { urlPlaceName, extractedCoords });
-
-          // Use smart geocoding to validate coordinates against place name
-          const result = await smartGeocode({
-            urlPlaceName,
-            extractedCoordinates: extractedCoords,
-            googleMapsUrl: finalUrl,
-            scrapedName,
-            scrapedAddress,
-          });
-
-          if (result) {
-            console.log('[smartGeocode result]', result);
+          if (result.success && result.place) {
+            console.log('[Places API result]', result.place);
 
             const extractedPlaceData: ExtractedPlace = {
-              name: result.name,
-              address: result.address,
-              lat: result.lat,
-              lng: result.lng,
-              googleMapsUrl: finalUrl,
-              urlExtractedName: urlPlaceName || null,
-              geocodedName: result.placeInfo?.name,
-              displayName: result.placeInfo?.displayName,
-              placeType: result.placeInfo?.placeType || null,
-              city: result.placeInfo?.city || null,
-              country: result.placeInfo?.country || null,
+              name: result.place.name,
+              address: result.place.address,
+              lat: result.place.lat,
+              lng: result.place.lng,
+              googleMapsUrl: result.place.googleMapsUrl,
+              urlExtractedName: null,
+              geocodedName: result.place.name,
+              displayName: `${result.place.name}, ${result.place.address}`,
+              placeType: result.place.types?.[0] || null,
+              city: null,
+              country: null,
             };
 
             console.log('[All Extracted Place Data]', extractedPlaceData);
@@ -621,8 +565,12 @@ export default function Layout({
             setExtractedPlace(extractedPlaceData);
             setIsAddPlaceOpen(true);
           } else {
-            console.log('[smartGeocode failed] Could not extract place info');
-            showToast('error', 'Could not find location in URL. Try a different Google Maps link.');
+            console.log('[Places API failed]', result.error);
+            if (result.apiKeyConfigured === false) {
+              showToast('error', 'Google Maps API key not configured.');
+            } else {
+              showToast('error', result.error || 'Could not find location in URL. Try a different Google Maps link.');
+            }
           }
         }
         // Note: We intentionally don't show error for non-Maps URLs to avoid spamming
