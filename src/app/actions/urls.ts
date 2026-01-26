@@ -1,6 +1,7 @@
 'use server';
 
 import { expandAndScrapeGoogleMapsUrl } from '@/lib/google-maps-scraper';
+import { extractPlaceInfoFromUrl, extractPlaceNameFromUrl } from '@/lib/maps';
 
 /**
  * Result from expanding a shortened Google Maps URL
@@ -18,11 +19,14 @@ export interface ExpandedUrlResult {
   scrapedWebsite?: string;
   /** Opening hours if available */
   scrapedHours?: string;
+  /** Address extracted from URL path (fallback when scraping fails) */
+  urlExtractedAddress?: string;
   error?: string;
 }
 
 /**
- * Fallback: expand URL using fetch (fast, but can't get address)
+ * Fallback: expand URL using fetch (fast, but can't get address from DOM)
+ * Will extract address from URL path if available
  */
 async function expandUrlWithFetch(shortUrl: string): Promise<ExpandedUrlResult> {
   const response = await fetch(shortUrl, {
@@ -35,10 +39,24 @@ async function expandUrlWithFetch(shortUrl: string): Promise<ExpandedUrlResult> 
     },
   });
 
-  const expandedUrl = response.url;
+  let expandedUrl = response.url;
   const isGoogleMaps = /google\..*\/maps|maps\.google\./i.test(expandedUrl);
 
-  if (!isGoogleMaps) {
+  // If we ended up on consent page, extract the continue URL
+  if (expandedUrl.includes('consent.google.com')) {
+    try {
+      const urlObj = new URL(expandedUrl);
+      const continueUrl = urlObj.searchParams.get('continue');
+      if (continueUrl) {
+        console.log('[URL Expansion/Fetch] Using continue URL from consent page');
+        expandedUrl = continueUrl;
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }
+
+  if (!isGoogleMaps && !expandedUrl.includes('google.com/maps')) {
     return { success: false, error: 'Redirect did not lead to Google Maps' };
   }
 
@@ -51,10 +69,24 @@ async function expandUrlWithFetch(shortUrl: string): Promise<ExpandedUrlResult> 
     scrapedName = placeDataMatch[1];
   }
 
+  // Try to extract place info from URL
+  let urlExtractedAddress: string | undefined;
+  const placeInfo = extractPlaceInfoFromUrl(expandedUrl);
+  if (placeInfo) {
+    if (!scrapedName && placeInfo.name) {
+      scrapedName = placeInfo.name;
+    }
+    if (placeInfo.address) {
+      urlExtractedAddress = placeInfo.address;
+      console.log('[URL Expansion/Fetch] Extracted address from URL:', urlExtractedAddress);
+    }
+  }
+
   return {
     success: true,
     expandedUrl,
     scrapedName,
+    urlExtractedAddress,
   };
 }
 
@@ -101,16 +133,43 @@ export async function expandShortenedMapsUrl(
           hours: result.data?.openingHours,
         });
 
-        // Warn if address is missing
-        if (!result.data?.address) {
-          console.warn('[URL Expansion] WARNING: Address not scraped from page');
+        let scrapedName = result.data?.name || undefined;
+        let scrapedAddress = result.data?.address || undefined;
+        let urlExtractedAddress: string | undefined;
+
+        // If scraping didn't get address, try to extract from URL
+        if (!scrapedAddress) {
+          console.log('[URL Expansion] Trying to extract address from URL path...');
+          const placeInfo = extractPlaceInfoFromUrl(result.expandedUrl);
+          if (placeInfo) {
+            console.log('[URL Expansion] Extracted from URL:', placeInfo);
+            if (placeInfo.address) {
+              urlExtractedAddress = placeInfo.address;
+              console.log('[URL Expansion] Using URL-extracted address:', urlExtractedAddress);
+            }
+            // Also use name from URL if scraping didn't get it
+            if (!scrapedName && placeInfo.name) {
+              scrapedName = placeInfo.name;
+            }
+          }
+        }
+
+        // If still no name, try simpler extraction
+        if (!scrapedName) {
+          scrapedName = extractPlaceNameFromUrl(result.expandedUrl) || undefined;
+        }
+
+        // Warn if address is still missing
+        if (!scrapedAddress && !urlExtractedAddress) {
+          console.warn('[URL Expansion] WARNING: Address not found from scraping or URL');
         }
 
         return {
           success: true,
           expandedUrl: result.expandedUrl,
-          scrapedName: result.data?.name || undefined,
-          scrapedAddress: result.data?.address || undefined,
+          scrapedName,
+          scrapedAddress,
+          urlExtractedAddress,
           scrapedPhone: result.data?.phone,
           scrapedWebsite: result.data?.website,
           scrapedHours: result.data?.openingHours,

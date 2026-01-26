@@ -487,8 +487,9 @@ export default function Layout({
             if (expansion.success && expansion.expandedUrl) {
               finalUrl = expansion.expandedUrl;
               scrapedName = expansion.scrapedName;
-              scrapedAddress = expansion.scrapedAddress;
-              console.log('[URL Expanded]', finalUrl, { scrapedName, scrapedAddress });
+              // Use scraped address, or fall back to URL-extracted address
+              scrapedAddress = expansion.scrapedAddress || expansion.urlExtractedAddress;
+              console.log('[URL Expanded]', finalUrl, { scrapedName, scrapedAddress, urlExtractedAddress: expansion.urlExtractedAddress });
             } else {
               console.error('[URL Expansion Failed]', expansion.error);
               showToast('error', 'Could not expand shortened URL. Try copying the full link from Google Maps.');
@@ -572,8 +573,9 @@ export default function Layout({
             if (expansion.success && expansion.expandedUrl) {
               finalUrl = expansion.expandedUrl;
               scrapedName = expansion.scrapedName;
-              scrapedAddress = expansion.scrapedAddress;
-              console.log('[URL Expanded]', finalUrl, { scrapedName, scrapedAddress });
+              // Use scraped address, or fall back to URL-extracted address
+              scrapedAddress = expansion.scrapedAddress || expansion.urlExtractedAddress;
+              console.log('[URL Expanded]', finalUrl, { scrapedName, scrapedAddress, urlExtractedAddress: expansion.urlExtractedAddress });
             } else {
               console.error('[URL Expansion Failed]', expansion.error);
               showToast('error', 'Could not expand shortened URL. Try copying the full link from Google Maps.');

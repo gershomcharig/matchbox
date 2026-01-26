@@ -250,25 +250,42 @@ export async function smartGeocode(
     };
   }
 
-  // Case 2: No coordinates, only place name - forward geocode
-  if (urlPlaceName) {
-    console.log('[smartGeocode] Have only name, forward geocoding...');
+  // Case 2: No coordinates - try to forward geocode
+  // Priority: scraped address > url place name
+  const addressToGeocode = scrapedAddress || urlPlaceName;
 
-    let forwardResult = await forwardGeocode(urlPlaceName);
+  if (addressToGeocode) {
+    console.log('[smartGeocode] No coords, forward geocoding:', addressToGeocode);
 
-    // If fails, try cleaned name
-    if (!forwardResult) {
-      const cleanedName = cleanPlaceNameForGeocoding(urlPlaceName);
-      if (cleanedName && cleanedName !== urlPlaceName) {
-        console.log('[smartGeocode] Trying cleaned name:', cleanedName);
-        forwardResult = await forwardGeocode(cleanedName);
+    let forwardResult = await forwardGeocode(addressToGeocode);
+
+    // If forward geocode of address/name fails, try variations
+    if (!forwardResult && urlPlaceName) {
+      // Try the place name directly
+      if (addressToGeocode !== urlPlaceName) {
+        console.log('[smartGeocode] Trying URL place name:', urlPlaceName);
+        forwardResult = await forwardGeocode(urlPlaceName);
+      }
+
+      // Try cleaned name
+      if (!forwardResult) {
+        const cleanedName = cleanPlaceNameForGeocoding(urlPlaceName);
+        if (cleanedName && cleanedName !== urlPlaceName) {
+          console.log('[smartGeocode] Trying cleaned name:', cleanedName);
+          forwardResult = await forwardGeocode(cleanedName);
+        }
       }
     }
 
     if (forwardResult) {
+      // Use the scraped name if available, else URL name, else geocoded name
+      const placeName = scrapedName || urlPlaceName || forwardResult.name || 'Unknown Place';
+      // For address, prefer the scraped address if available (it's from Google)
+      const address = scrapedAddress || forwardResult.address;
+
       return {
-        name: urlPlaceName,
-        address: forwardResult.address,
+        name: placeName,
+        address: address,
         lat: forwardResult.lat,
         lng: forwardResult.lng,
         source: 'forward_geocode',
@@ -277,6 +294,7 @@ export async function smartGeocode(
     }
 
     // Forward geocode failed
+    console.log('[smartGeocode] Forward geocoding failed');
     return null;
   }
 

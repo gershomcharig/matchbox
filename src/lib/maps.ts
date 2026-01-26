@@ -392,6 +392,65 @@ export function extractPlaceNameFromUrl(url: string): string | null {
 }
 
 /**
+ * Extracts a full place string from URL that may include address
+ *
+ * Android-shared URLs often have format:
+ * /place/Name,+Address,+City+Postcode/data=...
+ *
+ * This extracts the full string including address for geocoding
+ *
+ * @param url - The Google Maps URL to parse
+ * @returns Object with name and address parts, or null
+ */
+export function extractPlaceInfoFromUrl(url: string): { name: string; address: string | null } | null {
+  if (!url || typeof url !== 'string') {
+    return null;
+  }
+
+  try {
+    // Pattern to match /place/PlaceInfo/ in URL
+    const placePattern = /\/place\/([^/@]+)/i;
+    const match = url.match(placePattern);
+
+    if (match && match[1]) {
+      // Decode URL encoding
+      const fullString = decodeURIComponent(match[1].replace(/\+/g, ' ')).trim();
+
+      if (fullString.length < 2) {
+        return null;
+      }
+
+      // Check if it looks like "Name, Address, City Postcode" format
+      // by looking for comma followed by something that looks like an address (has numbers)
+      const parts = fullString.split(',').map(p => p.trim());
+
+      if (parts.length >= 2) {
+        // Check if second part looks like an address (contains numbers)
+        const secondPart = parts.slice(1).join(', ');
+        if (/\d/.test(secondPart)) {
+          // Likely "Name, Address" format
+          return {
+            name: parts[0],
+            address: secondPart,
+          };
+        }
+      }
+
+      // Just a name, no address
+      return {
+        name: fullString,
+        address: null,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error extracting place info from URL:', error);
+    return null;
+  }
+}
+
+/**
  * Cleans a place name for better geocoding results
  * 
  * Removes address components, categories, and other noise that might

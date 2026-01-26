@@ -993,61 +993,62 @@ Read this file at the start of each session to maintain context and avoid repeat
 
 ### 2026-01-26 (Bug Fix: Google Maps Place Extraction Issues)
 
-#### Problem 1: Android link returns wrong coordinates
-- Example: `https://maps.app.goo.gl/SckhMyXSB3Yjn6Zz7` returned coordinates in Australia instead of London
-- Root cause: URL contains MULTIPLE `!3d!4d` coordinate pairs:
-  - Device/user location (where user shared from)
-  - Actual place location
-  - Viewport center
-- Previous logic picked first match that differed from viewport, which selected wrong coords
+#### Root Cause Analysis (After Investigation)
 
-#### Problem 2: Desktop link returns "Address not available"
-- Example: `https://maps.app.goo.gl/Bnp5Tf3mmosUFYAX6` returned correct coords but no address
-- Root cause: Address selector `button[data-item-id="address"]` may not match Google Maps current UI
+**Android URL (`maps.app.goo.gl/SckhMyXSB3Yjn6Zz7`):**
+- Redirects to consent page, continue URL: `/place/The+Gluten+Free+Bakery,+58+Chadwick+Rd,+London+SE15+4PU/data=...`
+- **NO `!3d!4d` coordinates in the URL at all** - the issue wasn't wrong coords, they were missing entirely
+- Address is embedded in the URL path as part of the place name
+- Solution: Extract address from URL path and forward geocode to get coordinates
 
-#### Solution:
+**Desktop URL (`maps.app.goo.gl/Bnp5Tf3mmosUFYAX6`):**
+- Redirects to consent page, continue URL: `/@51.4680721,-0.0749573,17z/data=...!3d51.4680721!4d-0.0749573`
+- Coordinates are correct (London: 51.46°N, 0.07°W) ✅
+- Address not in URL path - would need DOM scraping, but consent page blocks this
 
-**1. Improved coordinate extraction (src/lib/maps.ts)**
-- Strategy 1: Look for place ID marker (`!1s0x...:0x...`) - coords after this are definitively the place
-- Strategy 2: For `/place/` URLs, look for coords in `data=` section
-- Strategy 3: Prefer coords that differ significantly from viewport (@ coords)
-- Strategy 4: Use LAST `!3d!4d` pair as fallback (typically the focused place in Android URLs)
-- Added verbose debug logging for all coordinate pairs found
+#### Solution Implemented
 
-**2. Improved address scraping (src/lib/google-maps-scraper.ts)**
-- Added multiple fallback selectors:
-  - `button[data-item-id="address"]` (primary)
-  - `[data-item-id="address"]` (any element)
-  - `div[data-section-id="ad"] button` (address section)
-  - `button[aria-label*="Address"]` (aria-label match)
-- Extract address from aria-label attribute as fallback
-- Final fallback: extract from URL path (`/place/ADDRESS/@...`)
-- Increased wait time from 1.5s to 2.5s for dynamic content
-- Added explicit wait for address selector with 3s timeout
+**1. New URL extraction function (src/lib/maps.ts)**
+- Added `extractPlaceInfoFromUrl()` to extract BOTH name AND address from URL path
+- Handles Android-style URLs: `/place/Name,+Address,+City+Postcode/...`
+- Returns `{ name: string, address: string | null }`
 
-**3. Improved consent page handling (src/lib/google-maps-scraper.ts)**
-- Check page content for consent forms, not just URL
-- Try multiple consent button selectors in priority order:
-  - `#L2AGLb` (Google's Accept all button ID)
-  - `button[aria-label*="Accept all"]`
-  - `button[aria-label*="Accept"]`
-  - `button[aria-label*="Agree"]`
-  - Form submit buttons
-- Fallback to text-content matching for accept/agree buttons
+**2. Improved consent page handling (src/lib/google-maps-scraper.ts)**
+- When landing on consent page, extract the `continue` URL parameter
+- Navigate directly to continue URL, bypassing consent
+- Falls back to parsing continue URL for data extraction if navigation fails
 
-**4. Added debug logging (src/app/actions/urls.ts)**
-- Log Puppeteer result details including URL, success, error
-- Log all scraped data fields
-- Warn explicitly when address is not scraped
+**3. Updated server action (src/app/actions/urls.ts)**
+- Added `urlExtractedAddress` field alongside `scrapedAddress`
+- When DOM scraping fails, fall back to URL path extraction
+- Uses `extractPlaceInfoFromUrl()` to get address from URL
+
+**4. Updated paste handlers (Layout.tsx, share/page.tsx)**
+- Use `urlExtractedAddress` as fallback when `scrapedAddress` is null
+- Both paste button and global paste listener updated
+
+**5. Updated smart geocoding (src/lib/geocoding.ts)**
+- When no coordinates available, forward geocode the ADDRESS (not just name)
+- Priority: scraped/URL address > place name
+- "58 Chadwick Rd, London SE15 4PU" → forward geocode → London coords
+
+#### Test Results (Debug Script Verified)
+- **Android URL**: name="The Gluten Free Bakery", address="58 Chadwick Rd, London SE15 4PU" ✅
+  - No coords in URL, will forward geocode address to get London location
+- **Desktop URL**: coords=51.46°N, 0.07°W (London) ✅, name="The Gluten Free Bakery" ✅
+  - Has correct coordinates, address can use forward geocoding as fallback
 
 #### Files Modified:
-- src/lib/maps.ts - Coordinate extraction with 4 strategies
-- src/lib/google-maps-scraper.ts - Address scraping with fallbacks, consent handling
-- src/app/actions/urls.ts - Debug logging
+- src/lib/maps.ts - Added extractPlaceInfoFromUrl(), improved coordinate extraction
+- src/lib/google-maps-scraper.ts - Consent URL extraction, improved consent handling
+- src/app/actions/urls.ts - urlExtractedAddress field, URL extraction fallback
+- src/components/Layout.tsx - Use urlExtractedAddress fallback
+- src/app/share/page.tsx - Use urlExtractedAddress fallback
+- src/lib/geocoding.ts - Geocode address when no coordinates
 
 #### Verification:
 - Build passes successfully
-- Test with provided URLs needed
+- Debug script confirms correct extraction from both test URLs
 
 ---
 

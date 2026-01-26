@@ -53,8 +53,9 @@ function ShareContent() {
         if (expansion.success && expansion.expandedUrl) {
           mapsUrl = expansion.expandedUrl;
           scrapedName = expansion.scrapedName;
-          scrapedAddress = expansion.scrapedAddress;
-          console.log('[Share] URL expanded with scraped data:', { scrapedName, scrapedAddress });
+          // Use scraped address, or fall back to URL-extracted address
+          scrapedAddress = expansion.scrapedAddress || expansion.urlExtractedAddress;
+          console.log('[Share] URL expanded with scraped data:', { scrapedName, scrapedAddress, urlExtractedAddress: expansion.urlExtractedAddress });
         } else {
           setStatus('error');
           setMessage('Could not expand shortened link. Try sharing the full URL from Google Maps.');

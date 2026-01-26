@@ -70,88 +70,102 @@ async function getBrowser(): Promise<Browser> {
 
 /**
  * Handle Google consent page if we land on it
- * Improved to detect consent forms in page content, not just URL
+ * Uses multiple strategies to bypass consent
  */
-async function handleConsentPage(page: Page): Promise<void> {
+async function handleConsentPage(page: Page): Promise<boolean> {
   const url = page.url();
 
-  // Check URL for consent page
+  // Check if we're on consent page
   const isConsentUrl = url.includes('consent.google.com');
 
-  // Also check page content for consent forms (some regions show inline consent)
-  const hasConsentForm = await page.evaluate(() => {
-    // Check for common consent form indicators
-    const consentIndicators = [
-      'form[action*="consent"]',
-      '#L2AGLb', // Google's "Accept all" button ID
-      'button[aria-label*="Accept"]',
-      'button[aria-label*="Agree"]',
-      '[data-ved] button', // Google's consent buttons often have data-ved
-    ];
-
-    for (const selector of consentIndicators) {
-      if (document.querySelector(selector)) {
-        return true;
-      }
-    }
-
-    // Check for consent-related text
-    const bodyText = document.body?.innerText?.toLowerCase() || '';
-    return bodyText.includes('before you continue') ||
-           bodyText.includes('accept all') ||
-           bodyText.includes('consent');
-  }).catch(() => false);
-
-  if (!isConsentUrl && !hasConsentForm) {
-    return;
+  if (!isConsentUrl) {
+    return false;
   }
 
-  console.log('[Scraper] Handling consent page...');
+  console.log('[Scraper] On consent page, attempting to bypass...');
 
   try {
-    // Try multiple consent button selectors
-    const consentClicked = await page.evaluate(() => {
-      // Priority-ordered list of consent button selectors
-      const buttonSelectors = [
-        '#L2AGLb', // Google's "Accept all" button ID (most reliable)
+    // Strategy 1: Click any "Accept all" or similar button
+    const clicked = await page.evaluate(() => {
+      // Look for buttons by various attributes
+      const selectors = [
         'button[aria-label*="Accept all"]',
         'button[aria-label*="Accept"]',
         'button[aria-label*="Agree"]',
-        'form[action*="consent"] button[type="submit"]',
-        'form[action*="consent"] button',
+        'button[jsname]', // Google buttons often have jsname attribute
+        'form button',
+        'button',
       ];
 
-      for (const selector of buttonSelectors) {
-        const btn = document.querySelector(selector);
-        if (btn instanceof HTMLElement) {
-          console.log('[Scraper] Clicking consent button:', selector);
-          btn.click();
-          return true;
+      for (const selector of selectors) {
+        const buttons = document.querySelectorAll(selector);
+        for (const btn of buttons) {
+          const text = (btn.textContent || '').toLowerCase();
+          const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
+
+          // Look for accept/agree language
+          if (text.includes('accept') || text.includes('agree') ||
+              text.includes('i agree') || text.includes('continue') ||
+              ariaLabel.includes('accept') || ariaLabel.includes('agree')) {
+            (btn as HTMLElement).click();
+            return true;
+          }
         }
       }
 
-      // Fallback: find any button with accept/agree text
-      const buttons = Array.from(document.querySelectorAll('button'));
-      for (const btn of buttons) {
-        const text = btn.textContent?.toLowerCase() || '';
-        const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || '';
-        if (text.includes('accept') || text.includes('agree') ||
-            ariaLabel.includes('accept') || ariaLabel.includes('agree')) {
-          btn.click();
-          return true;
-        }
+      // Last resort: click any submit button
+      const submitBtns = document.querySelectorAll('button[type="submit"], input[type="submit"]');
+      if (submitBtns.length > 0) {
+        (submitBtns[0] as HTMLElement).click();
+        return true;
       }
 
       return false;
     });
 
-    if (consentClicked) {
-      await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {
-        console.log('[Scraper] Navigation after consent timed out, continuing...');
-      });
+    if (clicked) {
+      console.log('[Scraper] Clicked consent button, waiting for navigation...');
+      // Wait for navigation to complete
+      await Promise.race([
+        page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }),
+        new Promise(r => setTimeout(r, 5000)), // Fallback timeout
+      ]).catch(() => {});
+
+      // Check if we're still on consent page
+      const newUrl = page.url();
+      if (!newUrl.includes('consent.google.com')) {
+        console.log('[Scraper] Successfully bypassed consent page');
+        return true;
+      }
     }
+
+    // Strategy 2: Try to extract the continue URL and navigate directly
+    console.log('[Scraper] Trying to extract continue URL from consent page...');
+    const continueUrl = await page.evaluate(() => {
+      // Look for the continue URL in the page
+      const links = document.querySelectorAll('a[href*="continue="]');
+      if (links.length > 0) {
+        return (links[0] as HTMLAnchorElement).href;
+      }
+      return null;
+    });
+
+    if (continueUrl) {
+      // Parse the continue URL from the consent URL
+      const urlParams = new URL(url).searchParams;
+      const continueParam = urlParams.get('continue');
+      if (continueParam) {
+        console.log('[Scraper] Navigating directly to continue URL');
+        await page.goto(continueParam, { waitUntil: 'networkidle2', timeout: 30000 });
+        return true;
+      }
+    }
+
+    console.log('[Scraper] Could not bypass consent page');
+    return false;
   } catch (error) {
     console.log('[Scraper] Consent handling error:', error);
+    return false;
   }
 }
 
@@ -187,7 +201,11 @@ export async function scrapeGoogleMapsPlace(mapsUrl: string): Promise<ScrapedPla
     });
 
     // Handle consent page if needed
-    await handleConsentPage(page);
+    const wasConsentPage = await handleConsentPage(page);
+    if (wasConsentPage) {
+      // Give the page time to load after consent
+      await new Promise(r => setTimeout(r, 2000));
+    }
 
     // Wait for content to load
     await page.waitForSelector('h1', { timeout: 10000 }).catch(() => {});
@@ -356,12 +374,40 @@ export async function expandAndScrapeGoogleMapsUrl(shortUrl: string): Promise<{
         timeout: 30000
       });
 
-      // Handle consent if needed
-      await handleConsentPage(page);
+      // Get the URL (might be consent page)
+      let expandedUrl = page.url();
+      console.log('[Scraper] Initial URL after redirect:', expandedUrl);
 
-      // Get the final URL after redirects
-      const expandedUrl = page.url();
-      console.log('[Scraper] Expanded URL:', expandedUrl);
+      // If we landed on consent page, extract the actual maps URL from the continue parameter
+      if (expandedUrl.includes('consent.google.com')) {
+        try {
+          const urlObj = new URL(expandedUrl);
+          const continueUrl = urlObj.searchParams.get('continue');
+          if (continueUrl) {
+            console.log('[Scraper] Extracted continue URL from consent page');
+            // Try to navigate directly to the continue URL
+            await page.goto(continueUrl, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {
+              console.log('[Scraper] Direct navigation failed, will use consent page URL');
+            });
+            expandedUrl = page.url();
+
+            // If still on consent, at least use the continue URL for parsing
+            if (expandedUrl.includes('consent.google.com')) {
+              expandedUrl = continueUrl;
+            }
+          }
+        } catch (e) {
+          console.log('[Scraper] Failed to parse consent URL:', e);
+        }
+      }
+
+      // Handle consent if we're still on it
+      if (expandedUrl.includes('consent.google.com')) {
+        await handleConsentPage(page);
+        expandedUrl = page.url();
+      }
+
+      console.log('[Scraper] Final expanded URL:', expandedUrl);
 
       // Verify it's a Google Maps URL
       if (!expandedUrl.includes('google.com/maps') && !expandedUrl.includes('maps.google')) {
