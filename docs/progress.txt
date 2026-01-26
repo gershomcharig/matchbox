@@ -6,9 +6,9 @@ Read this file at the start of each session to maintain context and avoid repeat
 ---
 
 ## Current Status
-**Last Updated**: 2026-01-22
-**Current Phase**: Phase 15 COMPLETE
-**Next Step**: Phase 16 - Deployment
+**Last Updated**: 2026-01-26
+**Current Phase**: Phase 17.1 COMPLETE (GPS Location)
+**Next Step**: Phase 16 - Production Testing
 
 ---
 
@@ -1103,11 +1103,40 @@ Replaced the entire extraction mechanism with **Google Maps Places API** - the a
 
 ---
 
+### Phase 17.1: GPS Location (COMPLETE)
+- [x] useGeolocation hook - src/hooks/useGeolocation.ts
+  - Auto-requests location permission on mount
+  - Uses watchPosition for continuous tracking
+  - Returns: location (lat/lng), error, permissionDenied, isLoading
+  - Cleanup on unmount (clears watcher)
+  - High accuracy mode with 10s timeout, 30s cache
+- [x] UserLocationMarker - src/components/UserLocationMarker.tsx
+  - Pulsing blue dot (Mapbox Marker)
+  - Uses Tailwind animate-ping for pulse effect
+  - White border with blue shadow
+- [x] Map component updates - src/components/Map.tsx
+  - Added userLocation prop
+  - Added MapHandle interface with flyToUserLocation()
+  - Uses forwardRef + useImperativeHandle
+  - Renders UserLocationMarker when location available
+- [x] Layout button - src/components/Layout.tsx
+  - "My Location" button with Locate icon (lucide-react)
+  - Positioned next to Paste Link button
+  - States: disabled (permission denied), gray (no location), blue (location available)
+  - Shows toast when clicked with permission denied or no location
+- [x] Page wiring - src/app/page.tsx
+  - Added mapRef with MapHandle type
+  - Integrated useGeolocation hook
+  - Passes userLocation and callbacks through Layout to Map
+
+---
+
 ## Next Steps (from roadmap.md)
 
 1. Phase 16: Deployment (Vercel production testing)
    - Test with GOOGLE_MAPS_API_KEY configured in Vercel
    - Verify place extraction works with various URL types
+   - Test GPS location on mobile devices
 
 Note: Export & Import moved to future features.
 

@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Map as MapGL, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import MapMarker from './MapMarker';
+import UserLocationMarker from './UserLocationMarker';
 import { type PlaceWithCollection } from '@/app/actions/places';
 
 // London coordinates for empty state
@@ -20,14 +21,36 @@ const FIT_BOUNDS_PADDING = { top: 80, bottom: 80, left: 40, right: 40 };
 interface MapProps {
   /** Places to display as markers */
   places?: PlaceWithCollection[];
+  /** User's current location */
+  userLocation?: { lat: number; lng: number } | null;
   /** Callback when a marker is clicked */
   onMarkerClick?: (placeId: string) => void;
   /** Callback when a marker context menu is requested (right-click/long-press) */
   onMarkerContextMenu?: (placeId: string, x: number, y: number) => void;
 }
 
-export default function Map({ places = [], onMarkerClick, onMarkerContextMenu }: MapProps) {
+export interface MapHandle {
+  flyToUserLocation: () => void;
+}
+
+const MapComponent = forwardRef<MapHandle, MapProps>(function Map(
+  { places = [], userLocation, onMarkerClick, onMarkerContextMenu },
+  ref
+) {
   const mapRef = useRef<MapRef>(null);
+
+  // Expose flyToUserLocation method via ref
+  useImperativeHandle(ref, () => ({
+    flyToUserLocation: () => {
+      if (mapRef.current && userLocation) {
+        mapRef.current.flyTo({
+          center: [userLocation.lng, userLocation.lat],
+          zoom: 15,
+          duration: 1000,
+        });
+      }
+    },
+  }), [userLocation]);
 
   // Handle marker click
   const handleMarkerClick = useCallback(
@@ -119,6 +142,13 @@ export default function Map({ places = [], onMarkerClick, onMarkerContextMenu }:
           />
         );
       })}
+
+      {/* User location marker - rendered last to appear on top */}
+      {userLocation && (
+        <UserLocationMarker lat={userLocation.lat} lng={userLocation.lng} />
+      )}
     </MapGL>
   );
-}
+});
+
+export default MapComponent;

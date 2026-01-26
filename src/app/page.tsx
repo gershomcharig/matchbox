@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo, Suspense } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Layout from '@/components/Layout';
-import Map from '@/components/Map';
+import Map, { type MapHandle } from '@/components/Map';
 import EmptyState from '@/components/EmptyState';
 import PlaceDetailsPanel from '@/components/PlaceDetailsPanel';
 import EditPlaceModal from '@/components/EditPlaceModal';
@@ -20,9 +20,21 @@ import {
 import ContextMenu, { type ContextMenuAction } from '@/components/ContextMenu';
 import { getCollections, type Collection } from '@/app/actions/collections';
 import { type ExtractedPlace } from '@/components/AddPlaceModal';
+import { useGeolocation } from '@/hooks/useGeolocation';
 import { AlertTriangle, X } from 'lucide-react';
 
 function HomeContent() {
+  // Map ref for programmatic control
+  const mapRef = useRef<MapHandle>(null);
+
+  // Geolocation
+  const { location: userLocation, permissionDenied: locationPermissionDenied } = useGeolocation();
+
+  // Handle fly to user location
+  const handleFlyToUserLocation = useCallback(() => {
+    mapRef.current?.flyToUserLocation();
+  }, []);
+
   // Data state
   const [places, setPlaces] = useState<PlaceWithCollection[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -403,6 +415,9 @@ function HomeContent() {
       onPlaceClick={handlePlaceClick}
       onCollectionFilterChange={handleCollectionFilterChange}
       selectedPlaceId={selectedPlace?.id}
+      userLocation={userLocation}
+      locationPermissionDenied={locationPermissionDenied}
+      onFlyToUserLocation={handleFlyToUserLocation}
     >
       {/* Filter bar and view toggle */}
       <FilterBar
@@ -453,7 +468,9 @@ function HomeContent() {
 
       {/* Map View */}
       <Map
+        ref={mapRef}
         places={filteredPlaces}
+        userLocation={userLocation}
         onMarkerClick={handleMarkerClick}
         onMarkerContextMenu={handleMarkerContextMenu}
       />

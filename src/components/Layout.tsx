@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Layers, MapPinPlus, ClipboardPaste } from 'lucide-react';
+import { LogOut, Layers, MapPinPlus, ClipboardPaste, Locate } from 'lucide-react';
 import { clearSessionToken } from '@/lib/auth';
 import { detectMapsUrl } from '@/lib/maps';
 import { extractPlaceFromUrl, searchPlaceByText } from '@/app/actions/places-api';
@@ -36,6 +36,12 @@ interface LayoutProps {
   onCollectionFilterChange?: (collectionId: string | null) => void;
   /** Currently selected place ID */
   selectedPlaceId?: string | null;
+  /** User's current location */
+  userLocation?: { lat: number; lng: number } | null;
+  /** Whether location permission was denied */
+  locationPermissionDenied?: boolean;
+  /** Callback to fly to user's location */
+  onFlyToUserLocation?: () => void;
 }
 
 export default function Layout({
@@ -48,6 +54,9 @@ export default function Layout({
   onPlaceClick,
   onCollectionFilterChange,
   selectedPlaceId,
+  userLocation,
+  locationPermissionDenied,
+  onFlyToUserLocation,
 }: LayoutProps) {
   const router = useRouter();
   const [isNewCollectionOpen, setIsNewCollectionOpen] = useState(false);
@@ -466,6 +475,19 @@ export default function Layout({
     }
   }, [sharedPlace, onSharedPlaceHandled]);
 
+  // Handle my location button click
+  const handleMyLocationClick = useCallback(() => {
+    if (locationPermissionDenied) {
+      showToast('error', 'Location access denied. Check your browser settings.');
+      return;
+    }
+    if (!userLocation) {
+      showToast('error', 'Location unavailable');
+      return;
+    }
+    onFlyToUserLocation?.();
+  }, [userLocation, locationPermissionDenied, onFlyToUserLocation, showToast]);
+
   // Handle paste button click
   const handlePasteButtonClick = async () => {
     try {
@@ -736,8 +758,9 @@ export default function Layout({
       {/* Install Prompt */}
       <InstallPrompt />
 
-      {/* Paste Button - floating at bottom center */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20">
+      {/* Bottom buttons - Paste and My Location */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+        {/* Paste Button */}
         <button
           onClick={handlePasteButtonClick}
           className="flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold shadow-xl shadow-amber-500/30 hover:shadow-amber-500/50 hover:from-amber-400 hover:to-orange-400 active:scale-95 transition-all"
@@ -745,6 +768,22 @@ export default function Layout({
         >
           <ClipboardPaste className="w-5 h-5" />
           <span>Paste Link</span>
+        </button>
+
+        {/* My Location Button */}
+        <button
+          onClick={handleMyLocationClick}
+          disabled={locationPermissionDenied}
+          className={`flex items-center justify-center w-11 h-11 rounded-full shadow-lg transition-all active:scale-95 ${
+            locationPermissionDenied
+              ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
+              : userLocation
+                ? 'bg-white dark:bg-zinc-900 text-blue-500 hover:bg-blue-50 dark:hover:bg-zinc-800 shadow-blue-500/10'
+                : 'bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+          }`}
+          title={locationPermissionDenied ? 'Location access denied' : 'Go to my location'}
+        >
+          <Locate className="w-5 h-5" />
         </button>
       </div>
 

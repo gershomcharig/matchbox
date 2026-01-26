@@ -644,6 +644,18 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 
 ---
 
+## Phase 17: GPS Location
+
+### 17.1 User Location on Map
+- [x] Create useGeolocation hook (permission request, position watching)
+- [x] Add user location marker (pulsing blue dot)
+- [x] Update Map component to show user location
+- [x] Add "My Location" button to fly to user position
+- [x] Handle permission denied state gracefully
+- [x] **Test**: Location dot appears, button flies to location
+
+---
+
 ## Future Phases (Post-Launch)
 
 Not in v1 - documented for later.
@@ -654,7 +666,6 @@ Not in v1 - documented for later.
 - Place thumbnails
 - Distance sorting (GPS)
 - Custom drag-drop ordering
-- Center on user location
 - Article scraping for places
 - Multi-collection places
 - PDF/Google Maps list export
