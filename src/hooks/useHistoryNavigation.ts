@@ -67,7 +67,8 @@ export function useHistoryNavigation(options: UseHistoryNavigationOptions) {
     currentState.current = state;
 
     // Push state to history. We use the same URL to avoid URL changes.
-    window.history.pushState(state, '');
+    // Wrap our state in a known key to avoid conflicts with Next.js internal state
+    window.history.pushState({ __matchbook: state }, '');
 
     isNavigating.current = false;
   }, []);
@@ -79,7 +80,8 @@ export function useHistoryNavigation(options: UseHistoryNavigationOptions) {
     isNavigating.current = true;
     currentState.current = state;
 
-    window.history.replaceState(state, '');
+    // Wrap our state in a known key to avoid conflicts with Next.js internal state
+    window.history.replaceState({ __matchbook: state }, '');
 
     isNavigating.current = false;
   }, []);
@@ -90,7 +92,7 @@ export function useHistoryNavigation(options: UseHistoryNavigationOptions) {
   const clearState = useCallback(() => {
     currentState.current = null;
     // Replace with empty state to clean up
-    window.history.replaceState(null, '');
+    window.history.replaceState({ __matchbook: null }, '');
   }, []);
 
   // Handle popstate (back/forward button)
@@ -101,9 +103,11 @@ export function useHistoryNavigation(options: UseHistoryNavigationOptions) {
         return;
       }
 
-      const state = event.state as PanelView | null;
+      // Extract our state from the wrapper (or handle legacy/Next.js state)
+      const rawState = event.state;
+      const state = rawState?.__matchbook as PanelView | null | undefined;
       const previousState = currentState.current;
-      currentState.current = state;
+      currentState.current = state ?? null;
 
       // Determine what action to take based on where we came from and where we're going
       if (!state || state.view === 'map') {
@@ -132,9 +136,9 @@ export function useHistoryNavigation(options: UseHistoryNavigationOptions) {
 
     // On initial mount, clear any stale history state from previous sessions
     // This ensures we always start fresh at the map view on page load/refresh
-    if (window.history.state && typeof window.history.state === 'object' && 'view' in window.history.state) {
+    if (window.history.state?.__matchbook) {
       // Replace with clean state so refresh starts fresh
-      window.history.replaceState(null, '');
+      window.history.replaceState({ __matchbook: null }, '');
       currentState.current = null;
     }
 

@@ -695,6 +695,7 @@ export default function Layout({
             }}
             className="flex items-center gap-2 px-2 py-2 rounded-xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-lg shadow-zinc-900/5 dark:shadow-zinc-950/50"
             title="Collections"
+            data-testid="collections-button"
           >
             <Layers className="w-4 h-4" />
           </button>
@@ -774,11 +775,12 @@ export default function Layout({
       />
 
       {/* Collections Panel (slide-up) */}
-      {isCollectionsOpen && (
+      {(collectionsOpen !== undefined ? collectionsOpen : isCollectionsOpen) && (
         <div className="fixed inset-0 z-50">
           {/* Backdrop (transparent, just for click-to-close) */}
           <div
             className="absolute inset-0"
+            data-testid="collections-backdrop"
             onClick={() => {
               setIsCollectionsOpen(false);
               // Reset drill-down state when closing
@@ -795,7 +797,10 @@ export default function Layout({
             }}
           />
           {/* Panel */}
-          <div className="absolute bottom-0 left-0 right-0 max-h-[70vh] bg-white dark:bg-zinc-900 rounded-t-3xl shadow-xl overflow-hidden animate-in slide-in-from-bottom duration-200">
+          <div
+            className="absolute bottom-0 left-0 right-0 max-h-[70vh] bg-white dark:bg-zinc-900 rounded-t-3xl shadow-xl overflow-hidden animate-in slide-in-from-bottom duration-200"
+            data-testid="collections-panel"
+          >
             {/* Handle */}
             <div className="flex justify-center py-3">
               <div className="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
