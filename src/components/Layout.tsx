@@ -31,7 +31,7 @@ interface LayoutProps {
   /** All places data for collections panel */
   places?: PlaceWithCollection[];
   /** Callback when a place is clicked in the collections panel */
-  onPlaceClick?: (placeId: string) => void;
+  onPlaceClick?: (placeId: string, fromCollectionId?: string) => void;
   /** Callback when collection filter changes from panel drill-down */
   onCollectionFilterChange?: (collectionId: string | null) => void;
   /** Currently selected place ID */
@@ -42,6 +42,16 @@ interface LayoutProps {
   locationPermissionDenied?: boolean;
   /** Callback to fly to user's location */
   onFlyToUserLocation?: () => void;
+  /** History navigation functions from parent */
+  historyNav?: {
+    pushState: (state: import('@/hooks/useHistoryNavigation').PanelView) => void;
+    replaceState: (state: import('@/hooks/useHistoryNavigation').PanelView) => void;
+    clearState: () => void;
+  };
+  /** External control: open collections panel */
+  collectionsOpen?: boolean;
+  /** External control: set the drilled-down collection */
+  drilledCollectionId?: string | null;
 }
 
 export default function Layout({
@@ -57,6 +67,9 @@ export default function Layout({
   userLocation,
   locationPermissionDenied,
   onFlyToUserLocation,
+  historyNav,
+  collectionsOpen,
+  drilledCollectionId,
 }: LayoutProps) {
   const router = useRouter();
   const [isNewCollectionOpen, setIsNewCollectionOpen] = useState(false);
@@ -155,23 +168,29 @@ export default function Layout({
       // Filter the map to this collection
       onCollectionFilterChange?.(collection.id);
       onCollectionSelected?.(collection);
+      // Push history state for collection drill-down
+      historyNav?.pushState({ view: 'collection', collectionId: collection.id });
     },
-    [onCollectionSelected, onCollectionFilterChange]
+    [onCollectionSelected, onCollectionFilterChange, historyNav]
   );
 
   // Handle going back from collection places list
   const handleBack = useCallback(() => {
     setSelectedCollectionForDrilldown(null);
     onCollectionFilterChange?.(null);
-  }, [onCollectionFilterChange]);
+    // Push history state for collections list
+    historyNav?.replaceState({ view: 'collections' });
+  }, [onCollectionFilterChange, historyNav]);
 
   // Handle place click in collection places list
   const handlePlaceClickInList = useCallback(
     (placeId: string) => {
+      // Pass the collection ID so the parent knows where we came from
+      const fromCollectionId = selectedCollectionForDrilldown?.id;
       setIsCollectionsOpen(false);
-      onPlaceClick?.(placeId);
+      onPlaceClick?.(placeId, fromCollectionId);
     },
-    [onPlaceClick]
+    [onPlaceClick, selectedCollectionForDrilldown]
   );
 
   const handleOpenNewCollection = () => {
@@ -481,6 +500,41 @@ export default function Layout({
     }
   }, [sharedPlace, onSharedPlaceHandled]);
 
+  // Sync external control props with internal state (for back button navigation)
+  useEffect(() => {
+    if (collectionsOpen !== undefined) {
+      setIsCollectionsOpen(collectionsOpen);
+      // If closing, also reset drill-down state
+      if (!collectionsOpen) {
+        setSelectedCollectionForDrilldown(null);
+        setShowTrash(false);
+      }
+    }
+  }, [collectionsOpen]);
+
+  // Sync drilled collection from external control
+  useEffect(() => {
+    if (drilledCollectionId === null) {
+      // Going back to collections list - clear drill-down but keep panel open
+      setSelectedCollectionForDrilldown(null);
+      onCollectionFilterChange?.(null);
+    } else if (drilledCollectionId !== undefined) {
+      // Find the collection from places data and drill into it
+      const collectionFromPlace = places.find(p => p.collection_id === drilledCollectionId)?.collection;
+      if (collectionFromPlace) {
+        // Cast to Collection - the place.collection has fewer fields but that's OK
+        // We only use id, name, color, icon in the UI anyway
+        const collection: Collection = {
+          ...collectionFromPlace,
+          created_at: '', // Not used in UI
+          updated_at: '', // Not used in UI
+        };
+        setSelectedCollectionForDrilldown(collection);
+        onCollectionFilterChange?.(drilledCollectionId);
+      }
+    }
+  }, [drilledCollectionId, places, onCollectionFilterChange]);
+
   // Handle my location button click
   const handleMyLocationClick = useCallback(() => {
     if (locationPermissionDenied) {
@@ -635,7 +689,10 @@ export default function Layout({
         <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
           {/* Collections toggle button */}
           <button
-            onClick={() => setIsCollectionsOpen(true)}
+            onClick={() => {
+              setIsCollectionsOpen(true);
+              historyNav?.pushState({ view: 'collections' });
+            }}
             className="flex items-center gap-2 px-2 py-2 rounded-xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-lg shadow-zinc-900/5 dark:shadow-zinc-950/50"
             title="Collections"
           >
@@ -733,6 +790,8 @@ export default function Layout({
               if (showTrash) {
                 setShowTrash(false);
               }
+              // Clear history state when manually closing
+              historyNav?.clearState();
             }}
           />
           {/* Panel */}

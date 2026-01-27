@@ -634,13 +634,13 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 
 ### 16.2 Production Test
 - [x] Test deployed app
-- [ ] Check all features work
-- [ ] **Test**: Full user flow works in production
+- [x] Check all features work
+- [x] **Test**: Full user flow works in production
 
 ### 16.3 PWA Production Test
 - [x] Test PWA install on Android
-- [ ] Test Share Target
-- [ ] **Test**: Share from Google Maps works
+- [x] Test Share Target
+- [x] **Test**: Share from Google Maps works
 
 ---
 
@@ -653,6 +653,16 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 - [x] Add "My Location" button to fly to user position
 - [x] Handle permission denied state gracefully
 - [x] **Test**: Location dot appears, button flies to location
+
+### 17.2 Back Button Navigation
+- [x] Create useHistoryNavigation hook (History API, pushState/popstate)
+- [x] Track panel states: map, collections, collection, place
+- [x] Track "opened from" context (map pin vs collection list)
+- [x] Collections panel: push/pop history on open/drill/close
+- [x] Place panel: push history with source tracking
+- [x] Handle back button to navigate through panel states
+- [x] Handle page refresh gracefully (clear stale state)
+- [x] **Test**: Back button navigates through panels correctly
 
 ---
 

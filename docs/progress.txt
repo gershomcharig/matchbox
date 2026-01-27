@@ -1190,6 +1190,64 @@ ALTER TABLE places ADD COLUMN types TEXT[];
 
 ---
 
+---
+
+### 2026-01-27 (Enhancement: Back Button Navigation for Panels)
+
+#### Problem
+The browser/Android back button had no effect on panel states - pressing it while viewing a place or collection would either do nothing or close the app entirely.
+
+#### Solution Implemented
+
+**1. Created useHistoryNavigation hook (src/hooks/useHistoryNavigation.ts)**
+- Manages browser History API (pushState, replaceState, popstate events)
+- Tracks navigation stack: 'map' | 'collections' | 'collection' | 'place'
+- Stores context about where user came from (e.g., which collection when viewing a place)
+- Clears stale history state on page refresh for graceful recovery
+
+**2. Updated Layout.tsx**
+- Added historyNav, collectionsOpen, drilledCollectionId props
+- Collections button pushes { view: 'collections' } to history
+- Drilling into collection pushes { view: 'collection', collectionId }
+- Going back via button replaces state to { view: 'collections' }
+- Closing panel via backdrop clears history state
+- onPlaceClick now passes fromCollectionId to track source
+- External control props allow parent to control panel state on back navigation
+
+**3. Updated page.tsx (HomeContent)**
+- Integrated useHistoryNavigation hook with callbacks for each navigation type
+- Opening place from map pushes { view: 'place', source: 'map' }
+- Opening place from collection pushes { view: 'place', source: 'collection', collectionId }
+- Back button callbacks close panels and navigate to appropriate views
+- Manual panel close updates history state appropriately
+
+#### Navigation Behavior
+| Current State | Back Button Action |
+|--------------|-------------------|
+| Collection places list | → Collections list |
+| Collections list | → Close panel (map view) |
+| Place from collection | → Back to that collection |
+| Place from map pin | → Close panel (map view) |
+
+#### Edge Cases Handled
+- Page refresh clears stale history state
+- Duplicate history pushes prevented
+- Manual close (not via back) updates history appropriately
+- Rapid back presses handled via state tracking
+
+#### Files Created:
+- src/hooks/useHistoryNavigation.ts
+
+#### Files Modified:
+- src/components/Layout.tsx
+- src/app/page.tsx
+
+#### Verification:
+- TypeScript build passes
+- All navigation flows work correctly
+
+---
+
 ## Next Steps (from roadmap.md)
 
 1. Phase 16: Deployment (Vercel production testing)

@@ -21,6 +21,7 @@ import ContextMenu, { type ContextMenuAction } from '@/components/ContextMenu';
 import { getCollections, type Collection } from '@/app/actions/collections';
 import { type ExtractedPlace } from '@/components/AddPlaceModal';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { useHistoryNavigation, type PanelView } from '@/hooks/useHistoryNavigation';
 import { AlertTriangle, X } from 'lucide-react';
 
 function HomeContent() {
@@ -52,6 +53,51 @@ function HomeContent() {
   const [selectedPlaceTags, setSelectedPlaceTags] = useState<Tag[]>([]);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // Track where place was opened from (for back button navigation)
+  const [placeOpenedFrom, setPlaceOpenedFrom] = useState<{
+    source: 'map' | 'collection';
+    collectionId?: string;
+  } | null>(null);
+
+  // Collections panel control (for back button navigation)
+  const [collectionsOpen, setCollectionsOpen] = useState<boolean | undefined>(undefined);
+  const [drilledCollectionId, setDrilledCollectionId] = useState<string | null | undefined>(undefined);
+
+  // History navigation for back button support
+  const historyNav = useHistoryNavigation({
+    onNavigateToMap: useCallback(() => {
+      // Close all panels
+      setIsPanelOpen(false);
+      setSelectedPlace(null);
+      setSelectedPlaceTags([]);
+      setPlaceOpenedFrom(null);
+      setCollectionsOpen(false);
+      setDrilledCollectionId(undefined);
+    }, []),
+    onNavigateToCollections: useCallback(() => {
+      // Close place panel if open, show collections list
+      setIsPanelOpen(false);
+      setSelectedPlace(null);
+      setSelectedPlaceTags([]);
+      setPlaceOpenedFrom(null);
+      setCollectionsOpen(true);
+      setDrilledCollectionId(null); // null = show collections list, not drilled
+    }, []),
+    onNavigateToCollection: useCallback((collectionId: string) => {
+      // Close place panel if open, show specific collection
+      setIsPanelOpen(false);
+      setSelectedPlace(null);
+      setSelectedPlaceTags([]);
+      setPlaceOpenedFrom(null);
+      setCollectionsOpen(true);
+      setDrilledCollectionId(collectionId);
+    }, []),
+    onNavigateFromPlace: useCallback((source: 'map' | 'collection', collectionId?: string) => {
+      // This is called when navigating back from a place panel
+      // The actual navigation is handled by the other callbacks
+    }, []),
+  });
 
   // Filter state
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
@@ -215,27 +261,36 @@ function HomeContent() {
 
   // Handle marker click - open place details panel
   const handleMarkerClick = useCallback(
-    (placeId: string) => {
-      console.log('[Place Selected]', placeId);
+    (placeId: string, fromCollectionId?: string) => {
+      console.log('[Place Selected]', placeId, 'from collection:', fromCollectionId);
       const place = places.find((p) => p.id === placeId);
       if (place) {
         setSelectedPlace(place);
         setIsPanelOpen(true);
         fetchTagsForPlace(placeId);
+
+        // Track where the place was opened from
+        if (fromCollectionId) {
+          setPlaceOpenedFrom({ source: 'collection', collectionId: fromCollectionId });
+          historyNav.pushState({ view: 'place', source: 'collection', collectionId: fromCollectionId });
+        } else {
+          setPlaceOpenedFrom({ source: 'map' });
+          historyNav.pushState({ view: 'place', source: 'map' });
+        }
       }
     },
-    [places, fetchTagsForPlace]
+    [places, fetchTagsForPlace, historyNav]
   );
 
-  // Handle place click from list view
+  // Handle place click from list view (with optional collection source)
   const handlePlaceClick = useCallback(
-    (placeId: string) => {
-      handleMarkerClick(placeId);
+    (placeId: string, fromCollectionId?: string) => {
+      handleMarkerClick(placeId, fromCollectionId);
     },
     [handleMarkerClick]
   );
 
-  // Handle closing the panel
+  // Handle closing the panel (manual close, not via back button)
   const handleClosePanel = useCallback(() => {
     setIsPanelOpen(false);
     // Keep selectedPlace for animation, clear after transition
@@ -243,7 +298,18 @@ function HomeContent() {
       setSelectedPlace(null);
       setSelectedPlaceTags([]);
     }, 300);
-  }, []);
+
+    // If closed manually (not via back button), we need to update history
+    // Go back to the appropriate state based on where we came from
+    if (placeOpenedFrom?.source === 'collection' && placeOpenedFrom.collectionId) {
+      // Replace history state with the collection view
+      historyNav.replaceState({ view: 'collection', collectionId: placeOpenedFrom.collectionId });
+    } else {
+      // Clear history state entirely
+      historyNav.clearState();
+    }
+    setPlaceOpenedFrom(null);
+  }, [placeOpenedFrom, historyNav]);
 
   // Handle collection click from panel - filter by this collection
   const handleCollectionClick = useCallback(
@@ -418,6 +484,9 @@ function HomeContent() {
       userLocation={userLocation}
       locationPermissionDenied={locationPermissionDenied}
       onFlyToUserLocation={handleFlyToUserLocation}
+      historyNav={historyNav}
+      collectionsOpen={collectionsOpen}
+      drilledCollectionId={drilledCollectionId}
     >
       {/* Filter bar and view toggle */}
       <FilterBar
