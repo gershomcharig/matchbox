@@ -1391,6 +1391,50 @@ This is a known issue with `vh` units on mobile browsers where the viewport heig
 
 ---
 
+### 2026-01-28 (Bug Fix: Edit Modal Appearing Behind Place Panel)
+
+#### Problem
+When editing a place from the place details panel, the edit modal appeared behind the panel due to z-index ordering:
+- PlaceDetailsPanel: z-[60]
+- Modal (EditPlaceModal): z-50
+
+#### Solution Implemented
+Hide the place panel when the edit modal opens, and restore it when the modal closes. This provides cleaner UX than adjusting z-index values.
+
+**1. Modified handleEditClick (src/app/page.tsx)**
+- Added `setIsPanelOpen(false)` before opening edit modal
+- Panel hides smoothly before modal appears
+
+**2. Modified EditPlaceModal onClose handler (src/app/page.tsx)**
+- Changed from just closing modal to also restoring panel
+- `setIsEditModalOpen(false)` + `setIsPanelOpen(true)`
+- Panel reappears after modal closes
+
+**3. Added data-testid attributes for E2E testing**
+- PlaceDetailsPanel.tsx: `data-testid="edit-place-button"` on edit button
+- Modal.tsx: Added `testId` prop support + `data-testid` on panel, backdrop, and close button
+- EditPlaceModal.tsx: Passes `testId="edit-place-modal"` to Modal
+
+**4. Created E2E test (tests/e2e/edit-modal.spec.ts)**
+- Tests that panel hides when edit modal opens
+- Tests that panel restores when modal closes (via X button)
+- Tests that panel restores when modal closes (via backdrop click)
+
+#### Files Modified:
+- src/app/page.tsx
+- src/components/PlaceDetailsPanel.tsx
+- src/components/Modal.tsx
+- src/components/EditPlaceModal.tsx
+
+#### Files Created:
+- tests/e2e/edit-modal.spec.ts
+
+#### Verification:
+- Build passes
+- E2E tests pass (2 passed, 10 skipped - skipped tests have no test data)
+
+---
+
 ## Next Steps (from roadmap.md)
 
 1. Phase 16: Deployment (Vercel production testing)

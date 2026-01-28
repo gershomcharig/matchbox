@@ -171,6 +171,7 @@ export default function PlaceDetailsPanel({
               onClick={onEdit}
               className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
               aria-label="Edit place"
+              data-testid="edit-place-button"
             >
               <Pencil size={18} />
             </button>

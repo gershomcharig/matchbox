@@ -14,6 +14,8 @@ interface ModalProps {
   children: ReactNode;
   /** Optional max width class (default: max-w-md) */
   maxWidth?: string;
+  /** Optional test ID for E2E testing */
+  testId?: string;
 }
 
 export default function Modal({
@@ -22,6 +24,7 @@ export default function Modal({
   title,
   children,
   maxWidth = 'max-w-md',
+  testId,
 }: ModalProps) {
   // Handle escape key
   const handleEscape = useCallback(
@@ -55,6 +58,7 @@ export default function Modal({
         className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
         onClick={onClose}
         aria-hidden="true"
+        data-testid="modal-backdrop"
       />
 
       {/* Modal panel */}
@@ -69,6 +73,7 @@ export default function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
+        data-testid={testId}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0">
@@ -82,6 +87,7 @@ export default function Modal({
             onClick={onClose}
             className="p-2 -mr-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             aria-label="Close modal"
+            data-testid={testId ? `${testId}-close-button` : 'modal-close-button'}
           >
             <X className="w-5 h-5" />
           </button>

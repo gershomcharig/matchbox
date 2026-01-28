@@ -148,7 +148,7 @@ export default function EditPlaceModal({
   if (!place) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit Place" maxWidth="max-w-lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit Place" maxWidth="max-w-lg" testId="edit-place-modal">
       <div className="space-y-5">
         {/* Error message */}
         {error && (

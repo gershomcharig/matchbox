@@ -359,6 +359,7 @@ function HomeContent() {
 
   // Handle edit button click
   const handleEditClick = useCallback(() => {
+    setIsPanelOpen(false);  // Hide panel first
     setIsEditModalOpen(true);
   }, []);
 
@@ -561,7 +562,10 @@ function HomeContent() {
       <EditPlaceModal
         place={selectedPlace}
         isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setIsPanelOpen(true);  // Restore panel
+        }}
         onSave={handleEditSave}
         onDelete={handleDelete}
       />
