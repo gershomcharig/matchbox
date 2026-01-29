@@ -13,7 +13,7 @@ import {
   softDeletePlace,
 } from '@/app/actions/places';
 import { getCollections, type Collection } from '@/app/actions/collections';
-import { findIconByName } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 interface EditPlaceModalProps {
   /** The place being edited */
@@ -140,10 +140,11 @@ export default function EditPlaceModal({
 
   // Get selected collection
   const selectedCollection = collections.find((c) => c.id === collectionId);
-  const selectedCollectionIcon = selectedCollection
-    ? findIconByName(selectedCollection.icon)
+  const selectedEmoji = selectedCollection
+    ? isLegacyIconName(selectedCollection.icon)
+      ? DEFAULT_EMOJI.emoji
+      : selectedCollection.icon
     : null;
-  const SelectedIcon = selectedCollectionIcon?.icon;
 
   if (!place) return null;
 
@@ -193,8 +194,8 @@ export default function EditPlaceModal({
                       className="w-5 h-5 rounded-md flex items-center justify-center"
                       style={{ backgroundColor: selectedCollection.color }}
                     >
-                      {SelectedIcon && (
-                        <SelectedIcon size={12} className="text-white" strokeWidth={2.5} />
+                      {selectedEmoji && (
+                        <span className="text-xs leading-none">{selectedEmoji}</span>
                       )}
                     </div>
                     <span className="text-zinc-900 dark:text-zinc-100">
@@ -218,8 +219,7 @@ export default function EditPlaceModal({
             {isCollectionDropdownOpen && (
               <div className="absolute z-10 w-full mt-1 py-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg max-h-48 overflow-y-auto">
                 {collections.map((collection) => {
-                  const iconData = findIconByName(collection.icon);
-                  const Icon = iconData?.icon;
+                  const emoji = isLegacyIconName(collection.icon) ? DEFAULT_EMOJI.emoji : collection.icon;
                   const isSelected = collection.id === collectionId;
 
                   return (
@@ -238,7 +238,7 @@ export default function EditPlaceModal({
                         className="w-5 h-5 rounded-md flex items-center justify-center"
                         style={{ backgroundColor: collection.color }}
                       >
-                        {Icon && <Icon size={12} className="text-white" strokeWidth={2.5} />}
+                        <span className="text-xs leading-none">{emoji}</span>
                       </div>
                       <span className="text-zinc-900 dark:text-zinc-100">{collection.name}</span>
                     </button>

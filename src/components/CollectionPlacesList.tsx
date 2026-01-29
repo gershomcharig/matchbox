@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { type PlaceWithCollection } from '@/app/actions/places';
 import { type Collection } from '@/app/actions/collections';
-import { findIconByName } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
 
@@ -36,8 +36,7 @@ export default function CollectionPlacesList({
   const [sortOption, setSortOption] = useState<SortOption>('newest');
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
 
-  const iconData = findIconByName(collection.icon);
-  const CollectionIcon = iconData?.icon || MapPin;
+  const collectionEmoji = isLegacyIconName(collection.icon) ? DEFAULT_EMOJI.emoji : collection.icon;
 
   // Sort places based on selected option
   const sortedPlaces = useMemo(() => {
@@ -120,7 +119,7 @@ export default function CollectionPlacesList({
               className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
               style={{ backgroundColor: collection.color }}
             >
-              <CollectionIcon className="w-4 h-4 text-white" />
+              <span className="text-base leading-none">{collectionEmoji}</span>
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">

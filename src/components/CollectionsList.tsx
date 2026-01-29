@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Folder, Plus, Pencil, Trash2 } from 'lucide-react';
 import { getCollections, getCollectionPlaceCounts, type Collection } from '@/app/actions/collections';
 import { getDeletedPlaces } from '@/app/actions/places';
-import { findIconByName } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 interface CollectionsListProps {
   /** Callback when "New Collection" is clicked */
@@ -129,8 +129,7 @@ export default function CollectionsList({
       ) : (
         <div className="space-y-1">
           {collections.map((collection) => {
-            const iconData = findIconByName(collection.icon);
-            const Icon = iconData?.icon || Folder;
+            const displayEmoji = isLegacyIconName(collection.icon) ? DEFAULT_EMOJI.emoji : collection.icon;
             const isSelected = selectedId === collection.id;
             const count = placeCounts[collection.id] || 0;
 
@@ -152,12 +151,12 @@ export default function CollectionsList({
                   onClick={() => onSelectCollection?.(collection)}
                   className="flex items-center gap-3 flex-1 min-w-0 text-left"
                 >
-                  {/* Color swatch with icon */}
+                  {/* Color swatch with emoji */}
                   <div
                     className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
                     style={{ backgroundColor: collection.color }}
                   >
-                    <Icon className="w-4 h-4 text-white" />
+                    <span className="text-base leading-none">{displayEmoji}</span>
                   </div>
 
                   {/* Name and count */}

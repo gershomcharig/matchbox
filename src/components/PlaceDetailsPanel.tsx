@@ -17,7 +17,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { type PlaceWithCollection, type Tag as TagType } from '@/app/actions/places';
-import { findIconByName } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 /**
  * Format a place type string for display
@@ -131,9 +131,12 @@ export default function PlaceDetailsPanel({
 
   if (!place) return null;
 
-  // Get collection icon
-  const collectionIconData = place.collection ? findIconByName(place.collection.icon) : null;
-  const CollectionIcon = collectionIconData?.icon;
+  // Get collection emoji (handle legacy icon names)
+  const collectionEmoji = place.collection
+    ? isLegacyIconName(place.collection.icon)
+      ? DEFAULT_EMOJI.emoji
+      : place.collection.icon
+    : null;
 
   // Panel content (shared between mobile and desktop)
   const panelContent = (
@@ -160,7 +163,7 @@ export default function PlaceDetailsPanel({
                 color: place.collection.color,
               }}
             >
-              {CollectionIcon && <CollectionIcon size={12} />}
+              {collectionEmoji && <span className="text-xs">{collectionEmoji}</span>}
               {place.collection.name}
             </button>
           )}

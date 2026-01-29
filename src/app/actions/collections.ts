@@ -2,7 +2,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { DEFAULT_COLOR } from '@/lib/colors';
-import { DEFAULT_ICON } from '@/lib/icons';
+import { DEFAULT_EMOJI } from '@/lib/emojis';
 
 /** Default collection name */
 const DEFAULT_COLLECTION_NAME = 'My Places';
@@ -294,7 +294,7 @@ export async function getOrCreateDefaultCollection(): Promise<{
       .insert({
         name: DEFAULT_COLLECTION_NAME,
         color: DEFAULT_COLOR.value,
-        icon: DEFAULT_ICON.name,
+        icon: DEFAULT_EMOJI.emoji,
         created_at: now,
         updated_at: now,
       })

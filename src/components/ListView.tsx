@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { type PlaceWithCollection } from '@/app/actions/places';
 import { type Collection } from '@/app/actions/collections';
-import { findIconByName } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
 
@@ -222,8 +222,11 @@ export default function ListView({
             collectionId === 'uncategorized'
               ? null
               : collections.find((c) => c.id === collectionId);
-          const iconData = collection ? findIconByName(collection.icon) : null;
-          const CollectionIcon = iconData?.icon;
+          const collectionEmoji = collection
+            ? isLegacyIconName(collection.icon)
+              ? DEFAULT_EMOJI.emoji
+              : collection.icon
+            : null;
 
           return (
             <div key={collectionId} className="border-b border-zinc-200 dark:border-zinc-800 last:border-b-0">
@@ -238,7 +241,7 @@ export default function ListView({
                       className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: collection.color }}
                     >
-                      {CollectionIcon && <CollectionIcon size={14} className="text-white" />}
+                      {collectionEmoji && <span className="text-sm leading-none">{collectionEmoji}</span>}
                     </div>
                     <span className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
                       {collection.name}

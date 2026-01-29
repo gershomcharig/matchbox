@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { Folder } from 'lucide-react';
 import Modal from './Modal';
 import ColorPicker from './ColorPicker';
-import IconPicker from './IconPicker';
+import EmojiPicker from './EmojiPicker';
 import { DEFAULT_COLOR, type PresetColor } from '@/lib/colors';
-import { DEFAULT_ICON, type PresetIcon } from '@/lib/icons';
+import { DEFAULT_EMOJI, type PresetEmoji } from '@/lib/emojis';
 
 interface NewCollectionModalProps {
   /** Whether the modal is open */
@@ -27,7 +27,7 @@ export default function NewCollectionModal({
 }: NewCollectionModalProps) {
   const [name, setName] = useState('');
   const [color, setColor] = useState<PresetColor>(DEFAULT_COLOR);
-  const [icon, setIcon] = useState<PresetIcon>(DEFAULT_ICON);
+  const [emoji, setEmoji] = useState<PresetEmoji>(DEFAULT_EMOJI);
 
   const isValid = name.trim().length > 0;
 
@@ -38,7 +38,7 @@ export default function NewCollectionModal({
     onSubmit({
       name: name.trim(),
       color: color.value,
-      icon: icon.name,
+      icon: emoji.emoji,
     });
   };
 
@@ -46,12 +46,9 @@ export default function NewCollectionModal({
     // Reset form when closing
     setName('');
     setColor(DEFAULT_COLOR);
-    setIcon(DEFAULT_ICON);
+    setEmoji(DEFAULT_EMOJI);
     onClose();
   };
-
-  // Get the selected icon component for preview
-  const SelectedIcon = icon.icon;
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="New Collection" maxWidth="max-w-lg">
@@ -64,7 +61,7 @@ export default function NewCollectionModal({
               className="w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center transition-colors duration-200"
               style={{ backgroundColor: color.value }}
             >
-              <SelectedIcon className="w-7 h-7 text-white" />
+              <span className="text-2xl leading-none">{emoji.emoji}</span>
             </div>
             {/* Name preview */}
             <div>
@@ -72,7 +69,7 @@ export default function NewCollectionModal({
                 {name || 'Collection Name'}
               </p>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                {color.name} · {icon.name}
+                {color.name} · {emoji.name}
               </p>
             </div>
           </div>
@@ -113,11 +110,11 @@ export default function NewCollectionModal({
           onSelect={setColor}
         />
 
-        {/* Icon picker */}
-        <IconPicker
-          label="Icon"
-          value={icon.name}
-          onSelect={setIcon}
+        {/* Emoji picker */}
+        <EmojiPicker
+          label="Emoji"
+          value={emoji.emoji}
+          onSelect={setEmoji}
           accentColor={color.value}
         />
 

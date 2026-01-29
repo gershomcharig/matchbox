@@ -1,9 +1,9 @@
 'use client';
 
-import { AlertTriangle, MapPin } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import Modal from './Modal';
 import { type PlaceWithCollection } from '@/app/actions/places';
-import { PRESET_ICONS } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 interface DuplicateWarningModalProps {
   /** Whether the modal is open */
@@ -31,9 +31,8 @@ export default function DuplicateWarningModal({
   onAddAnyway,
   isSubmitting = false,
 }: DuplicateWarningModalProps) {
-  const getCollectionIcon = (iconName: string) => {
-    const iconDef = PRESET_ICONS.find((i) => i.name === iconName);
-    return iconDef?.icon || MapPin;
+  const getCollectionEmoji = (iconName: string) => {
+    return isLegacyIconName(iconName) ? DEFAULT_EMOJI.emoji : iconName;
   };
 
   const matchDescription =
@@ -56,16 +55,13 @@ export default function DuplicateWarningModal({
         {existingPlace && (
           <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700">
             <div className="flex items-start gap-3">
-              {/* Collection icon */}
+              {/* Collection emoji */}
               {existingPlace.collection && (
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: existingPlace.collection.color }}
                 >
-                  {(() => {
-                    const IconComponent = getCollectionIcon(existingPlace.collection.icon);
-                    return <IconComponent className="w-5 h-5 text-white" />;
-                  })()}
+                  <span className="text-lg leading-none">{getCollectionEmoji(existingPlace.collection.icon)}</span>
                 </div>
               )}
 

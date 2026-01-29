@@ -9,7 +9,7 @@ import {
   permanentlyDeletePlace,
   type PlaceWithCollection,
 } from '@/app/actions/places';
-import { findIconByName } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 export default function TrashPage() {
   const router = useRouter();
@@ -112,10 +112,11 @@ export default function TrashPage() {
             </p>
 
             {deletedPlaces.map((place) => {
-              const collectionIcon = place.collection
-                ? findIconByName(place.collection.icon)
+              const collectionEmoji = place.collection
+                ? isLegacyIconName(place.collection.icon)
+                  ? DEFAULT_EMOJI.emoji
+                  : place.collection.icon
                 : null;
-              const CollectionIcon = collectionIcon?.icon;
               const daysRemaining = place.deleted_at
                 ? getDaysRemaining(place.deleted_at)
                 : 30;
@@ -134,8 +135,8 @@ export default function TrashPage() {
                         className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor: place.collection.color }}
                       >
-                        {CollectionIcon && (
-                          <CollectionIcon size={16} className="text-white" strokeWidth={2.5} />
+                        {collectionEmoji && (
+                          <span className="text-base leading-none">{collectionEmoji}</span>
                         )}
                       </div>
                     )}

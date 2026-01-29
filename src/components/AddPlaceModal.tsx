@@ -5,7 +5,7 @@ import { MapPin, Navigation, ExternalLink, ChevronDown, Check } from 'lucide-rea
 import Modal from './Modal';
 import { getCollections, type Collection } from '@/app/actions/collections';
 import { PRESET_COLORS } from '@/lib/colors';
-import { PRESET_ICONS } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 /**
  * Extracted place data from Google Maps URL
@@ -91,10 +91,9 @@ export default function AddPlaceModal({
   // Get selected collection details
   const selectedCollection = collections.find((c) => c.id === selectedCollectionId);
 
-  // Get icon component for collection
-  const getCollectionIcon = (iconName: string) => {
-    const iconDef = PRESET_ICONS.find((i) => i.name === iconName);
-    return iconDef?.icon || MapPin;
+  // Get emoji for collection (handle legacy icon names)
+  const getCollectionEmoji = (iconName: string) => {
+    return isLegacyIconName(iconName) ? DEFAULT_EMOJI.emoji : iconName;
   };
 
   // Get color for collection
@@ -172,15 +171,12 @@ export default function AddPlaceModal({
               >
                 {selectedCollection ? (
                   <div className="flex items-center gap-3">
-                    {/* Collection color/icon badge */}
+                    {/* Collection color/emoji badge */}
                     <div
                       className="w-8 h-8 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: getCollectionColor(selectedCollection.color) }}
                     >
-                      {(() => {
-                        const IconComponent = getCollectionIcon(selectedCollection.icon);
-                        return <IconComponent className="w-4 h-4 text-white" />;
-                      })()}
+                      <span className="text-base leading-none">{getCollectionEmoji(selectedCollection.icon)}</span>
                     </div>
                     <span className="text-zinc-900 dark:text-zinc-100 font-medium">
                       {selectedCollection.name}
@@ -200,7 +196,7 @@ export default function AddPlaceModal({
               {isDropdownOpen && (
                 <div className="absolute z-10 w-full mt-2 py-2 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-xl shadow-zinc-900/10 dark:shadow-zinc-950/50 max-h-48 overflow-y-auto">
                   {collections.map((collection) => {
-                    const IconComponent = getCollectionIcon(collection.icon);
+                    const emoji = getCollectionEmoji(collection.icon);
                     const isSelected = collection.id === selectedCollectionId;
 
                     return (
@@ -220,7 +216,7 @@ export default function AddPlaceModal({
                             className="w-8 h-8 rounded-lg flex items-center justify-center"
                             style={{ backgroundColor: getCollectionColor(collection.color) }}
                           >
-                            <IconComponent className="w-4 h-4 text-white" />
+                            <span className="text-base leading-none">{emoji}</span>
                           </div>
                           <span
                             className={`font-medium ${

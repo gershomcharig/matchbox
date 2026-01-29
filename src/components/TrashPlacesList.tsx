@@ -12,7 +12,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { type PlaceWithCollection, restorePlace, permanentlyDeletePlace } from '@/app/actions/places';
-import { findIconByName } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
 
@@ -225,10 +225,11 @@ export default function TrashPlacesList({
             </p>
 
             {sortedPlaces.map((place) => {
-              const collectionIcon = place.collection
-                ? findIconByName(place.collection.icon)
+              const collectionEmoji = place.collection
+                ? isLegacyIconName(place.collection.icon)
+                  ? DEFAULT_EMOJI.emoji
+                  : place.collection.icon
                 : null;
-              const CollectionIcon = collectionIcon?.icon;
               const daysRemaining = place.deleted_at
                 ? getDaysRemaining(place.deleted_at)
                 : 30;
@@ -247,8 +248,8 @@ export default function TrashPlacesList({
                         className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor: place.collection.color }}
                       >
-                        {CollectionIcon && (
-                          <CollectionIcon size={14} className="text-white" strokeWidth={2.5} />
+                        {collectionEmoji && (
+                          <span className="text-sm leading-none">{collectionEmoji}</span>
                         )}
                       </div>
                     )}

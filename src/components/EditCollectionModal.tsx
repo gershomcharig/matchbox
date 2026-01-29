@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { Folder, Trash2, AlertTriangle } from 'lucide-react';
 import Modal from './Modal';
 import ColorPicker from './ColorPicker';
-import IconPicker from './IconPicker';
+import EmojiPicker from './EmojiPicker';
 import { PRESET_COLORS, findColorByValue, type PresetColor } from '@/lib/colors';
-import { findIconByName, type PresetIcon } from '@/lib/icons';
+import { findEmojiByChar, isLegacyIconName, DEFAULT_EMOJI, type PresetEmoji } from '@/lib/emojis';
 import type { Collection } from '@/app/actions/collections';
 
 interface EditCollectionModalProps {
@@ -40,7 +40,7 @@ export default function EditCollectionModal({
 }: EditCollectionModalProps) {
   const [name, setName] = useState('');
   const [color, setColor] = useState<PresetColor>(PRESET_COLORS[0]);
-  const [icon, setIcon] = useState<PresetIcon | null>(null);
+  const [emoji, setEmoji] = useState<PresetEmoji>(DEFAULT_EMOJI);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Initialize form when collection changes
@@ -49,8 +49,13 @@ export default function EditCollectionModal({
       setName(collection.name);
       const foundColor = findColorByValue(collection.color);
       if (foundColor) setColor(foundColor);
-      const foundIcon = findIconByName(collection.icon);
-      if (foundIcon) setIcon(foundIcon);
+      // Handle legacy icon names by falling back to default emoji
+      if (isLegacyIconName(collection.icon)) {
+        setEmoji(DEFAULT_EMOJI);
+      } else {
+        const foundEmoji = findEmojiByChar(collection.icon);
+        setEmoji(foundEmoji || DEFAULT_EMOJI);
+      }
       setShowDeleteConfirm(false);
     }
   }, [collection]);
@@ -60,13 +65,13 @@ export default function EditCollectionModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValid || isLoading || !collection || !icon) return;
+    if (!isValid || isLoading || !collection) return;
 
     onSave({
       id: collection.id,
       name: name.trim(),
       color: color.value,
-      icon: icon.name,
+      icon: emoji.emoji,
     });
   };
 
@@ -88,9 +93,6 @@ export default function EditCollectionModal({
   const handleCancelDelete = () => {
     setShowDeleteConfirm(false);
   };
-
-  // Get the selected icon component for preview
-  const SelectedIcon = icon?.icon || Folder;
 
   if (!collection) return null;
 
@@ -155,7 +157,7 @@ export default function EditCollectionModal({
                 className="w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center transition-colors duration-200"
                 style={{ backgroundColor: color.value }}
               >
-                <SelectedIcon className="w-7 h-7 text-white" />
+                <span className="text-2xl leading-none">{emoji.emoji}</span>
               </div>
               {/* Name preview */}
               <div>
@@ -163,7 +165,7 @@ export default function EditCollectionModal({
                   {name || 'Collection Name'}
                 </p>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {color.name} · {icon?.name || 'Icon'}
+                  {color.name} · {emoji.name}
                 </p>
               </div>
             </div>
@@ -204,15 +206,13 @@ export default function EditCollectionModal({
             onSelect={setColor}
           />
 
-          {/* Icon picker */}
-          {icon && (
-            <IconPicker
-              label="Icon"
-              value={icon.name}
-              onSelect={setIcon}
-              accentColor={color.value}
-            />
-          )}
+          {/* Emoji picker */}
+          <EmojiPicker
+            label="Emoji"
+            value={emoji.emoji}
+            onSelect={setEmoji}
+            accentColor={color.value}
+          />
 
           {/* Delete link */}
           <div>

@@ -3,61 +3,61 @@
 import { useState } from 'react';
 import { Check, Search } from 'lucide-react';
 import {
-  PRESET_ICONS,
-  getIconCategories,
-  getIconsByCategory,
-  type PresetIcon,
-} from '@/lib/icons';
+  PRESET_EMOJIS,
+  getEmojiCategories,
+  getEmojisByCategory,
+  type PresetEmoji,
+} from '@/lib/emojis';
 
-interface IconPickerProps {
-  /** Currently selected icon name */
+interface EmojiPickerProps {
+  /** Currently selected emoji character */
   value?: string;
-  /** Callback when an icon is selected */
-  onSelect: (icon: PresetIcon) => void;
+  /** Callback when an emoji is selected */
+  onSelect: (emoji: PresetEmoji) => void;
   /** Optional label */
   label?: string;
   /** Optional accent color for selection ring (hex) */
   accentColor?: string;
 }
 
-export default function IconPicker({
+export default function EmojiPicker({
   value,
   onSelect,
   label,
   accentColor,
-}: IconPickerProps) {
+}: EmojiPickerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const categories = getIconCategories();
+  const categories = getEmojiCategories();
 
-  // Filter icons based on search and category
-  const filteredIcons = PRESET_ICONS.filter((icon) => {
+  // Filter emojis based on search and category
+  const filteredEmojis = PRESET_EMOJIS.filter((emoji) => {
     const matchesSearch =
       searchQuery === '' ||
-      icon.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      icon.category.toLowerCase().includes(searchQuery.toLowerCase());
+      emoji.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emoji.category.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory =
-      selectedCategory === null || icon.category === selectedCategory;
+      selectedCategory === null || emoji.category === selectedCategory;
 
     return matchesSearch && matchesCategory;
   });
 
-  // Group icons by category for display
-  const groupedIcons = selectedCategory
-    ? { [selectedCategory]: getIconsByCategory(selectedCategory) }
+  // Group emojis by category for display
+  const groupedEmojis = selectedCategory
+    ? { [selectedCategory]: getEmojisByCategory(selectedCategory) }
     : categories.reduce(
         (acc, category) => {
-          const categoryIcons = filteredIcons.filter(
-            (icon) => icon.category === category
+          const categoryEmojis = filteredEmojis.filter(
+            (emoji) => emoji.category === category
           );
-          if (categoryIcons.length > 0) {
-            acc[category] = categoryIcons;
+          if (categoryEmojis.length > 0) {
+            acc[category] = categoryEmojis;
           }
           return acc;
         },
-        {} as Record<string, PresetIcon[]>
+        {} as Record<string, PresetEmoji[]>
       );
 
   return (
@@ -75,7 +75,7 @@ export default function IconPicker({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search icons..."
+          placeholder="Search emojis..."
           className="w-full pl-9 pr-4 py-2 text-sm rounded-lg bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all"
         />
       </div>
@@ -109,9 +109,9 @@ export default function IconPicker({
         ))}
       </div>
 
-      {/* Scrollable icon grid */}
+      {/* Scrollable emoji grid */}
       <div className="max-h-32 overflow-y-auto rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/30">
-        {Object.entries(groupedIcons).map(([category, icons]) => (
+        {Object.entries(groupedEmojis).map(([category, emojis]) => (
           <div key={category} className="p-3">
             {/* Category header (only show when viewing all) */}
             {selectedCategory === null && (
@@ -120,18 +120,17 @@ export default function IconPicker({
               </p>
             )}
 
-            {/* Icon grid */}
+            {/* Emoji grid */}
             <div className="grid grid-cols-8 gap-1.5">
-              {icons.map((iconData) => {
-                const Icon = iconData.icon;
-                const isSelected = value === iconData.name;
+              {emojis.map((emojiData) => {
+                const isSelected = value === emojiData.emoji;
 
                 return (
                   <button
-                    key={iconData.name}
+                    key={emojiData.emoji}
                     type="button"
-                    onClick={() => onSelect(iconData)}
-                    title={iconData.name}
+                    onClick={() => onSelect(emojiData)}
+                    title={emojiData.name}
                     className={`
                       relative w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150 ease-out
                       hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:scale-110
@@ -147,16 +146,10 @@ export default function IconPicker({
                         ? ({ '--tw-ring-color': accentColor } as React.CSSProperties)
                         : undefined
                     }
-                    aria-label={`Select ${iconData.name}`}
+                    aria-label={`Select ${emojiData.name}`}
                     aria-pressed={isSelected}
                   >
-                    <Icon
-                      className={`w-4 h-4 ${
-                        isSelected
-                          ? 'text-zinc-900 dark:text-zinc-100'
-                          : 'text-zinc-600 dark:text-zinc-400'
-                      }`}
-                    />
+                    <span className="text-lg leading-none">{emojiData.emoji}</span>
 
                     {/* Checkmark badge for selected */}
                     {isSelected && (
@@ -175,16 +168,16 @@ export default function IconPicker({
         ))}
 
         {/* Empty state */}
-        {filteredIcons.length === 0 && (
+        {filteredEmojis.length === 0 && (
           <div className="p-8 text-center">
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              No icons found for &quot;{searchQuery}&quot;
+              No emojis found for &quot;{searchQuery}&quot;
             </p>
           </div>
         )}
       </div>
 
-      {/* Selected icon indicator */}
+      {/* Selected emoji indicator */}
       {value && (
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
           Selected:{' '}

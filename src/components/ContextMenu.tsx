@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { type Collection } from '@/app/actions/collections';
-import { PRESET_ICONS } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 export interface ContextMenuAction {
   type: 'edit' | 'move' | 'copy' | 'navigate' | 'delete';
@@ -136,9 +136,8 @@ export default function ContextMenu({
     }
   };
 
-  const getCollectionIcon = (iconName: string) => {
-    const iconDef = PRESET_ICONS.find((i) => i.name === iconName);
-    return iconDef?.icon;
+  const getCollectionEmoji = (iconName: string) => {
+    return isLegacyIconName(iconName) ? DEFAULT_EMOJI.emoji : iconName;
   };
 
   // Filter out current collection from move targets
@@ -194,7 +193,7 @@ export default function ContextMenu({
               onMouseLeave={() => setShowMoveSubmenu(false)}
             >
               {moveTargets.map((collection) => {
-                const IconComponent = getCollectionIcon(collection.icon);
+                const emoji = getCollectionEmoji(collection.icon);
                 return (
                   <button
                     key={collection.id}
@@ -207,9 +206,7 @@ export default function ContextMenu({
                       className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: collection.color }}
                     >
-                      {IconComponent && (
-                        <IconComponent className="w-3.5 h-3.5 text-white" />
-                      )}
+                      <span className="text-sm leading-none">{emoji}</span>
                     </div>
                     <span className="truncate">{collection.name}</span>
                   </button>

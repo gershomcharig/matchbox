@@ -2,7 +2,7 @@
 
 import { useRef, useCallback } from 'react';
 import { Marker, MarkerEvent } from 'react-map-gl/mapbox';
-import { findIconByName } from '@/lib/icons';
+import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 interface MapMarkerProps {
   /** Unique identifier for the place */
@@ -36,8 +36,8 @@ export default function MapMarker({
   onClick,
   onContextMenu,
 }: MapMarkerProps) {
-  const iconData = findIconByName(iconName);
-  const IconComponent = iconData?.icon;
+  // Display the emoji directly, or fallback to default for legacy icon names
+  const displayEmoji = isLegacyIconName(iconName) ? DEFAULT_EMOJI.emoji : iconName;
 
   // Long press timer ref
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -139,18 +139,12 @@ export default function MapMarker({
           <circle cx="16" cy="16" r="16" fill={color} />
         </svg>
 
-        {/* Icon centered in the circle */}
+        {/* Emoji centered in the circle */}
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
           style={{ width: '20px', height: '20px' }}
         >
-          {IconComponent && (
-            <IconComponent
-              size={14}
-              color="#FFFFFF"
-              strokeWidth={2.5}
-            />
-          )}
+          <span className="text-sm leading-none">{displayEmoji}</span>
         </div>
       </div>
     </Marker>

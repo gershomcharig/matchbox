@@ -1469,6 +1469,69 @@ Modified `handleClosePanel()` to clear all collection context when closing a pla
 
 ---
 
+---
+
+### 2026-01-29 (Enhancement: Replace Icon System with Emojis)
+
+#### Purpose
+Replace the Lucide icon system for collections with emojis. Emojis are more fun, universally recognizable, and render consistently across devices.
+
+#### Changes Made
+
+**1. Created emoji data and utilities (src/lib/emojis.ts)**
+- ~88 place-relevant emojis organized by 10 categories
+- Categories: General, Food & Drink, Shopping, Entertainment, Recreation, Travel, Health, Education, Nature, Services
+- Functions: findEmojiByChar(), getEmojiCategories(), getEmojisByCategory(), isLegacyIconName()
+- DEFAULT_EMOJI constant (📍 Pin)
+- Legacy icon name detection for backwards compatibility
+
+**2. Created EmojiPicker component (src/components/EmojiPicker.tsx)**
+- Grid of emoji buttons with search functionality
+- Category filter pills
+- Selected state with checkmark badge
+- Same structure as old IconPicker for consistency
+
+**3. Updated all components to use emojis:**
+- MapMarker.tsx - Renders emoji instead of Lucide icon
+- CollectionsList.tsx - Shows emoji in collection row
+- NewCollectionModal.tsx - Uses EmojiPicker, submits emoji character
+- EditCollectionModal.tsx - Uses EmojiPicker, handles legacy icons
+- PlaceDetailsPanel.tsx - Shows emoji in collection badge
+- EditPlaceModal.tsx - Emoji in collection dropdown
+- AddPlaceModal.tsx - Emoji in collection dropdown
+- ManualPlaceModal.tsx - Emoji in collection dropdown
+- CollectionPlacesList.tsx - Emoji in collection header
+- ListView.tsx - Emoji in collection headers
+- TrashPlacesList.tsx - Emoji in place rows
+- ContextMenu.tsx - Emoji in "Move to" submenu
+- DuplicateWarningModal.tsx - Emoji in existing place card
+- src/app/trash/page.tsx - Emoji in trash item rows
+
+**4. Updated server action (src/app/actions/collections.ts)**
+- Uses DEFAULT_EMOJI.emoji for default collection creation
+
+**5. Deleted old files:**
+- src/lib/icons.ts - Old Lucide icon system
+- src/components/IconPicker.tsx - Old icon picker component
+
+#### Backwards Compatibility
+- isLegacyIconName() detects old Lucide icon names (e.g., "Coffee", "Pin")
+- Legacy names display fallback emoji (📍)
+- Existing collections with old icon names will show 📍 until edited
+
+#### Database Impact
+- No schema changes required
+- `icon` column now stores emoji character (e.g., "☕") instead of icon name
+- Old icon names in DB are handled gracefully via fallback
+
+#### Verification
+- TypeScript compilation passes
+- ESLint passes (no new errors)
+- E2E tests pass (2 passed, 10 skipped)
+- Production build succeeds
+
+---
+
 ## Next Steps (from roadmap.md)
 
 1. Phase 16: Deployment (Vercel production testing)
