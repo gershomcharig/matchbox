@@ -136,6 +136,359 @@ The collections panel is the main way to explore places in list format. It opens
 - Password set during initial setup
 - Stay logged in on device (persistent session until explicit logout)
 
+## User Stories
+
+This section documents all user interactions with step-by-step descriptions of how features work.
+
+### First-Time Setup
+
+**Goal**: Create a password to secure the app
+
+1. User opens Matchbook for the first time
+2. Sees setup screen with password fields
+3. Enters password (minimum 8 characters)
+4. Confirms password in second field
+5. Clicks "Set Password" button
+6. Redirected to login page
+
+### Logging In
+
+**Goal**: Access the app with password
+
+1. User opens Matchbook
+2. Sees login screen with password field
+3. Enters password
+4. Clicks "Login" button
+5. If correct: Sees map view with any saved places
+6. If incorrect: Sees "Incorrect password" error
+
+### Logging Out
+
+**Goal**: Sign out of the app
+
+1. User clicks logout button (top-right corner)
+2. Session cleared, redirected to login page
+
+---
+
+### Adding a Place by Pasting a Link
+
+**Goal**: Save a place from Google Maps
+
+1. User copies a Google Maps link from browser or app
+2. User presses Ctrl+V (or Cmd+V) anywhere in Matchbook
+3. App detects the Google Maps URL and shows loading indicator
+4. "Add Place" modal opens showing:
+   - Place name (extracted from Google)
+   - Address
+   - "View on Maps" link
+5. User selects a collection from dropdown
+6. User clicks "Save"
+7. Success toast: "[Place Name] added to your collection!"
+8. Place appears as a pin on the map
+
+### Adding a Place via Paste Button (Mobile)
+
+**Goal**: Save a place on mobile without keyboard shortcut
+
+1. User copies a Google Maps link
+2. User taps "Paste Link" button (orange, bottom center)
+3. Same flow as above: modal opens, user selects collection, saves
+
+### Adding a Place Manually
+
+**Goal**: Save a place by typing name/address
+
+1. User clicks "Add Place" button (top-right, plus icon)
+2. Modal opens with form fields:
+   - Name (required)
+   - Address (required)
+   - Collection dropdown
+3. User types place name and address
+4. User selects a collection
+5. User clicks "Save"
+6. App searches Google Maps for the location
+7. If found: Place saved, appears on map
+8. If not found: Error message shown
+
+### Handling Duplicate Places
+
+**Goal**: Avoid accidentally saving the same place twice
+
+1. User pastes/adds a place that already exists
+2. Warning modal appears showing:
+   - "This place may already exist"
+   - Existing place name and collection
+   - How it was matched (coordinates or URL)
+3. User can click "Add Anyway" to save it anyway
+4. Or click "Cancel" to discard
+
+### Sharing from Google Maps (Android)
+
+**Goal**: Save a place directly from Google Maps app
+
+1. User has Matchbook installed as PWA
+2. In Google Maps app, user taps Share on a place
+3. User selects "Matchbook" from share menu
+4. Matchbook opens with "Add Place" modal pre-filled
+5. User selects collection and saves
+
+---
+
+### Viewing a Place on the Map
+
+**Goal**: See details of a saved place
+
+1. User sees pins on the map (white with emoji icons)
+2. User clicks/taps a pin
+3. Place details panel slides up from bottom showing:
+   - Place name
+   - Place types (e.g., "Italian Restaurant")
+   - Collection badge (clickable)
+   - Address with "Copy address" button
+   - Rating with stars (if available)
+   - Opening hours with "Open/Closed" badge (if available)
+   - Website link (if available)
+   - Phone number (if available)
+4. Two action buttons at bottom:
+   - "Get Directions" (opens Google Maps navigation)
+   - "View on Google Maps" (opens original link)
+
+### Copying a Place's Address
+
+**Goal**: Copy address to use elsewhere
+
+1. User opens place details panel
+2. User clicks "Copy address" button below address
+3. Button changes to "Copied!" with checkmark
+4. Address is in clipboard
+
+### Getting Directions to a Place
+
+**Goal**: Navigate to a saved place
+
+1. User opens place details panel
+2. User clicks "Get Directions" button
+3. Google Maps opens in new tab with directions from current location
+
+---
+
+### Editing a Place
+
+**Goal**: Change a place's name or collection
+
+1. User opens place details panel
+2. User clicks edit button (pencil icon, top-right)
+3. Edit modal opens with:
+   - Name field (pre-filled)
+   - Collection dropdown (pre-selected)
+   - "Delete this place" link (red)
+4. User makes changes
+5. User clicks "Save"
+6. Success toast: "[Place Name] updated successfully!"
+7. Panel shows updated information
+
+### Moving a Place to Another Collection
+
+**Goal**: Reorganize places between collections
+
+**Method 1 - Via Edit Modal:**
+1. User opens place details panel
+2. User clicks edit button
+3. User changes collection in dropdown
+4. User clicks "Save"
+
+**Method 2 - Via Context Menu:**
+1. User right-clicks a pin (desktop) or long-presses (mobile)
+2. Context menu appears with place name
+3. User hovers/taps "Move to"
+4. Submenu shows all other collections
+5. User clicks destination collection
+6. Place moves immediately, pin updates
+
+### Deleting a Place
+
+**Goal**: Remove a place (with recovery option)
+
+1. User opens place details panel
+2. User clicks edit button
+3. User clicks "Delete this place" link
+4. Confirmation dialog: "Are you sure? This place will be moved to trash and can be restored within 30 days."
+5. User clicks "Delete"
+6. Place disappears from map
+7. Place appears in Trash
+
+---
+
+### Viewing Collections
+
+**Goal**: See all collections and their places
+
+1. User clicks "Collections" button (top-right, layers icon)
+2. Collections panel slides up from bottom showing:
+   - List of all collections with emoji + name + place count
+   - Trash at bottom (if contains deleted places)
+3. Each collection shows count: "5 places" or "1 place"
+
+### Creating a New Collection
+
+**Goal**: Organize places into a new category
+
+1. User opens collections panel
+2. User clicks "+" button in header
+3. "New Collection" modal opens with:
+   - Name field
+   - Emoji picker grid (organized by category)
+   - Live preview of emoji + name
+4. User types collection name
+5. User selects an emoji from the grid
+6. User clicks "Create"
+7. New collection appears in list
+
+### Editing a Collection
+
+**Goal**: Change collection name or emoji
+
+1. User opens collections panel
+2. User clicks pencil icon on a collection (or opens collection then clicks edit)
+3. "Edit Collection" modal opens with:
+   - Name field (pre-filled)
+   - Emoji picker (current emoji selected)
+   - "Delete this collection" link
+4. User makes changes
+5. User clicks "Save"
+6. Collection updates in list, pins update on map
+
+### Deleting a Collection
+
+**Goal**: Remove a collection
+
+1. User opens edit modal for a collection
+2. User clicks "Delete this collection"
+3. Confirmation: "When you delete a collection, its places are moved to [Default Collection]."
+4. User clicks "Delete"
+5. Collection removed from list
+6. Places moved to oldest remaining collection
+
+### Browsing Places in a Collection
+
+**Goal**: See all places in one collection
+
+1. User opens collections panel
+2. User clicks on a collection name
+3. Panel transitions to show:
+   - Back button
+   - Collection emoji + name + place count
+   - Sort dropdown (if 2+ places)
+   - List of places with name, address, date added
+4. Map filters to show only pins from this collection
+5. User can click any place to view details
+
+### Sorting Places in a Collection
+
+**Goal**: Change the order of places in a list
+
+1. User is viewing places in a collection
+2. User clicks sort dropdown (shows current sort)
+3. Options appear: Newest, Oldest, A-Z, Z-A
+4. User selects an option
+5. List reorders immediately
+
+---
+
+### Filtering Map by Collection
+
+**Goal**: Show only places from one collection on map
+
+**Method 1 - Via Collections Panel:**
+1. User opens collections panel
+2. User clicks a collection
+3. Map shows only that collection's pins
+
+**Method 2 - Via Place Details:**
+1. User opens place details panel
+2. User clicks collection badge (e.g., "🍔 Restaurants")
+3. Panel closes, map filters to that collection
+
+### Clearing Collection Filter
+
+**Goal**: Show all places on map again
+
+1. User is viewing a filtered collection
+2. User clicks back button in collections panel
+3. Map shows all places again
+
+### Using My Location
+
+**Goal**: Center map on current position
+
+1. User clicks location button (bottom center, near Paste Link)
+2. If first time: Browser asks for location permission
+3. If granted: Map flies to user's location, blue pulsing dot appears
+4. If denied: Toast: "Location access denied. Check your browser settings."
+
+---
+
+### Using the Context Menu
+
+**Goal**: Quick access to place actions
+
+**Desktop:**
+1. User right-clicks on a map pin
+2. Context menu appears with:
+   - Place name (header)
+   - Edit
+   - Move to → (submenu with collections)
+   - Copy address
+   - Get directions
+   - Delete
+
+**Mobile:**
+1. User long-presses a map pin (hold ~0.5 second)
+2. Same context menu appears
+
+### Navigating with Back Button
+
+**Goal**: Go back through panels
+
+1. From place details panel: Back closes panel, returns to map (or collection list if came from there)
+2. From collection places list: Back returns to collections list
+3. From collections panel: Back closes panel, shows map
+4. Android back button works the same way
+
+---
+
+### Viewing Trash
+
+**Goal**: See deleted places
+
+1. User opens collections panel
+2. User scrolls to bottom, clicks "Trash"
+3. Trash panel shows:
+   - List of deleted places
+   - Each shows name, address, days remaining (e.g., "30 days left")
+4. Places in trash do not appear on map
+
+### Restoring a Deleted Place
+
+**Goal**: Recover a deleted place
+
+1. User opens Trash
+2. User hovers/taps on a deleted place
+3. User clicks green checkmark button
+4. Place restored: appears on map again, removed from trash
+
+### Permanently Deleting a Place
+
+**Goal**: Remove a place forever
+
+1. User opens Trash
+2. User hovers/taps on a deleted place
+3. User clicks red trash button
+4. Confirmation: "Delete permanently? This cannot be undone."
+5. User clicks "Delete"
+6. Place removed from database, cannot be recovered
+
 ## Progressive Web App (PWA)
 - Manifest.json with app name, icons, theme colors
 - Service worker for PWA features
