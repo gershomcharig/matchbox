@@ -7,15 +7,11 @@ import Map, { type MapHandle } from '@/components/Map';
 import EmptyState from '@/components/EmptyState';
 import PlaceDetailsPanel from '@/components/PlaceDetailsPanel';
 import EditPlaceModal from '@/components/EditPlaceModal';
-import FilterBar from '@/components/FilterBar';
 import {
   getPlacesWithCollections,
-  getTagsForPlace,
-  getTags,
   updatePlace,
   softDeletePlace,
   type PlaceWithCollection,
-  type Tag,
 } from '@/app/actions/places';
 import ContextMenu, { type ContextMenuAction } from '@/components/ContextMenu';
 import { getCollections, type Collection } from '@/app/actions/collections';
@@ -39,7 +35,6 @@ function HomeContent() {
   // Data state
   const [places, setPlaces] = useState<PlaceWithCollection[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
-  const [allTags, setAllTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSoftLimitWarning, setShowSoftLimitWarning] = useState(false);
@@ -50,7 +45,6 @@ function HomeContent() {
 
   // Selected place state
   const [selectedPlace, setSelectedPlace] = useState<PlaceWithCollection | null>(null);
-  const [selectedPlaceTags, setSelectedPlaceTags] = useState<Tag[]>([]);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -70,7 +64,6 @@ function HomeContent() {
       // Close all panels
       setIsPanelOpen(false);
       setSelectedPlace(null);
-      setSelectedPlaceTags([]);
       setPlaceOpenedFrom(null);
       setCollectionsOpen(false);
       setDrilledCollectionId(undefined);
@@ -79,7 +72,6 @@ function HomeContent() {
       // Close place panel if open, show collections list
       setIsPanelOpen(false);
       setSelectedPlace(null);
-      setSelectedPlaceTags([]);
       setPlaceOpenedFrom(null);
       setCollectionsOpen(true);
       setDrilledCollectionId(null); // null = show collections list, not drilled
@@ -88,7 +80,6 @@ function HomeContent() {
       // Close place panel if open, show specific collection
       setIsPanelOpen(false);
       setSelectedPlace(null);
-      setSelectedPlaceTags([]);
       setPlaceOpenedFrom(null);
       setCollectionsOpen(true);
       setDrilledCollectionId(collectionId);
@@ -99,10 +90,8 @@ function HomeContent() {
     }, []),
   });
 
-  // Filter state
+  // Filter state (only collection filtering for drill-down)
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -123,10 +112,9 @@ function HomeContent() {
 
   // Fetch initial data on mount
   const fetchData = useCallback(async () => {
-    const [placesResult, collectionsResult, tagsResult] = await Promise.all([
+    const [placesResult, collectionsResult] = await Promise.all([
       getPlacesWithCollections(),
       getCollections(),
-      getTags(),
     ]);
 
     if (placesResult.success && placesResult.places) {
@@ -142,10 +130,6 @@ function HomeContent() {
 
     if (collectionsResult.success && collectionsResult.collections) {
       setCollections(collectionsResult.collections);
-    }
-
-    if (tagsResult.success && tagsResult.tags) {
-      setAllTags(tagsResult.tags);
     }
 
     setIsLoading(false);
@@ -183,81 +167,13 @@ function HomeContent() {
     setSharedPlace(null);
   }, []);
 
-  // Fetch tags when a place is selected
-  const fetchTagsForPlace = useCallback(async (placeId: string) => {
-    const result = await getTagsForPlace(placeId);
-    if (result.success && result.tags) {
-      setSelectedPlaceTags(result.tags);
-    } else {
-      setSelectedPlaceTags([]);
-    }
-  }, []);
-
-  // Build a map of place IDs to their tags for filtering
-  const [placeTagsMap, setPlaceTagsMap] = useState<Record<string, string[]>>({});
-
-  // Fetch tags for all places (for tag filtering)
-  useEffect(() => {
-    const fetchAllPlaceTags = async () => {
-      if (places.length === 0) return;
-
-      const tagsRecord: Record<string, string[]> = {};
-      await Promise.all(
-        places.map(async (place) => {
-          const result = await getTagsForPlace(place.id);
-          if (result.success && result.tags) {
-            tagsRecord[place.id] = result.tags.map((t) => t.name);
-          } else {
-            tagsRecord[place.id] = [];
-          }
-        })
-      );
-      setPlaceTagsMap(tagsRecord);
-    };
-
-    fetchAllPlaceTags();
-  }, [places]);
-
-  // Filter places based on selected filters and search query
+  // Filter places based on selected collection (for drill-down)
   const filteredPlaces = useMemo(() => {
-    return places.filter((place) => {
-      // Filter by collection
-      if (selectedCollections.length > 0) {
-        if (!place.collection || !selectedCollections.includes(place.collection.id)) {
-          return false;
-        }
-      }
-
-      // Filter by tags (OR logic - place must have ANY of the selected tags)
-      if (selectedTags.length > 0) {
-        const placeTags = placeTagsMap[place.id] || [];
-        const hasAnyTag = selectedTags.some((tag) =>
-          placeTags.some((pt) => pt.toLowerCase() === tag.toLowerCase())
-        );
-        if (!hasAnyTag) {
-          return false;
-        }
-      }
-
-      // Filter by search query
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase().trim();
-        const placeTags = placeTagsMap[place.id] || [];
-
-        const matchesName = place.name.toLowerCase().includes(query);
-        const matchesAddress = place.address?.toLowerCase().includes(query) || false;
-        const matchesNotes = place.notes?.toLowerCase().includes(query) || false;
-        const matchesTags = placeTags.some((tag) => tag.toLowerCase().includes(query));
-        const matchesCollection = place.collection?.name.toLowerCase().includes(query) || false;
-
-        if (!matchesName && !matchesAddress && !matchesNotes && !matchesTags && !matchesCollection) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [places, selectedCollections, selectedTags, searchQuery, placeTagsMap]);
+    if (selectedCollections.length === 0) return places;
+    return places.filter((place) =>
+      place.collection && selectedCollections.includes(place.collection.id)
+    );
+  }, [places, selectedCollections]);
 
   // Handle marker click - open place details panel
   const handleMarkerClick = useCallback(
@@ -267,7 +183,6 @@ function HomeContent() {
       if (place) {
         setSelectedPlace(place);
         setIsPanelOpen(true);
-        fetchTagsForPlace(placeId);
 
         // Track where the place was opened from
         if (fromCollectionId) {
@@ -280,7 +195,7 @@ function HomeContent() {
         }
       }
     },
-    [places, fetchTagsForPlace, historyNav]
+    [places, historyNav]
   );
 
   // Handle place click from list view (with optional collection source)
@@ -297,7 +212,6 @@ function HomeContent() {
     // Keep selectedPlace for animation, clear after transition
     setTimeout(() => {
       setSelectedPlace(null);
-      setSelectedPlaceTags([]);
     }, 300);
 
     // Clear collection context - closing a place exits everything
@@ -320,26 +234,6 @@ function HomeContent() {
     },
     [handleClosePanel]
   );
-
-  // Handle tag click from panel - filter by this tag
-  const handleTagClick = useCallback(
-    (tagName: string) => {
-      console.log('[Tag Clicked from Panel]', tagName);
-      // Add this tag to filters (or set as only tag filter)
-      if (!selectedTags.includes(tagName)) {
-        setSelectedTags([...selectedTags, tagName]);
-      }
-      handleClosePanel();
-    },
-    [handleClosePanel, selectedTags]
-  );
-
-  // Handle clear filters
-  const handleClearFilters = useCallback(() => {
-    setSelectedCollections([]);
-    setSelectedTags([]);
-    setSearchQuery('');
-  }, []);
 
   // Handle collection filter change (from drilling into a collection)
   const handleCollectionFilterChange = useCallback(
@@ -372,12 +266,11 @@ function HomeContent() {
         const updated = result.places.find((p) => p.id === selectedPlace.id);
         if (updated) {
           setSelectedPlace(updated);
-          fetchTagsForPlace(updated.id);
         }
       }
     }
     setIsRefreshing(false);
-  }, [fetchData, selectedPlace, fetchTagsForPlace]);
+  }, [fetchData, selectedPlace]);
 
   // Handle delete - refresh places and close panel
   const handleDelete = useCallback(async () => {
@@ -425,7 +318,6 @@ function HomeContent() {
         case 'edit':
           // Open edit modal for this place
           setSelectedPlace(contextMenuPlace);
-          fetchTagsForPlace(contextMenuPlace.id);
           setIsEditModalOpen(true);
           break;
 
@@ -467,7 +359,7 @@ function HomeContent() {
           break;
       }
     },
-    [contextMenuPlace, handleCloseContextMenu, fetchTagsForPlace, fetchData]
+    [contextMenuPlace, handleCloseContextMenu, fetchData]
   );
 
   const hasPlaces = places.length > 0;
@@ -488,16 +380,6 @@ function HomeContent() {
       collectionsOpen={collectionsOpen}
       drilledCollectionId={drilledCollectionId}
     >
-      {/* Filter bar and view toggle */}
-      <FilterBar
-        tags={allTags}
-        selectedTags={selectedTags}
-        searchQuery={searchQuery}
-        onTagChange={setSelectedTags}
-        onSearchChange={setSearchQuery}
-        onClearFilters={handleClearFilters}
-      />
-
       {/* Refreshing indicator */}
       {isRefreshing && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20">
@@ -548,11 +430,9 @@ function HomeContent() {
       {/* Place Details Panel */}
       <PlaceDetailsPanel
         place={selectedPlace}
-        tags={selectedPlaceTags}
         isOpen={isPanelOpen}
         onClose={handleClosePanel}
         onCollectionClick={handleCollectionClick}
-        onTagClick={handleTagClick}
         onEdit={handleEditClick}
       />
 

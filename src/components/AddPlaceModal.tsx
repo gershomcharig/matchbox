@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { MapPin, Navigation, ExternalLink, ChevronDown, Check } from 'lucide-react';
 import Modal from './Modal';
 import { getCollections, type Collection } from '@/app/actions/collections';
-import { PRESET_COLORS } from '@/lib/colors';
 import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 /**
@@ -96,11 +95,6 @@ export default function AddPlaceModal({
     return isLegacyIconName(iconName) ? DEFAULT_EMOJI.emoji : iconName;
   };
 
-  // Get color for collection
-  const getCollectionColor = (colorValue: string) => {
-    const colorDef = PRESET_COLORS.find((c) => c.value === colorValue);
-    return colorDef?.value || '#f59e0b';
-  };
 
   if (!place) return null;
 
@@ -173,8 +167,7 @@ export default function AddPlaceModal({
                   <div className="flex items-center gap-3">
                     {/* Collection color/emoji badge */}
                     <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: getCollectionColor(selectedCollection.color) }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center bg-white border border-zinc-200 dark:border-zinc-700"
                     >
                       <span className="text-base leading-none">{getCollectionEmoji(selectedCollection.icon)}</span>
                     </div>
@@ -213,8 +206,7 @@ export default function AddPlaceModal({
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center"
-                            style={{ backgroundColor: getCollectionColor(collection.color) }}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center bg-white border border-zinc-200 dark:border-zinc-700"
                           >
                             <span className="text-base leading-none">{emoji}</span>
                           </div>

@@ -245,8 +245,7 @@ export default function TrashPlacesList({
                     {/* Collection indicator */}
                     {place.collection && (
                       <div
-                        className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: place.collection.color }}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-white border border-zinc-200 dark:border-zinc-700"
                       >
                         {collectionEmoji && (
                           <span className="text-sm leading-none">{collectionEmoji}</span>

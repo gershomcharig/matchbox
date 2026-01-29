@@ -3,9 +3,7 @@
 import { useState } from 'react';
 import { Folder } from 'lucide-react';
 import Modal from './Modal';
-import ColorPicker from './ColorPicker';
 import EmojiPicker from './EmojiPicker';
-import { DEFAULT_COLOR, type PresetColor } from '@/lib/colors';
 import { DEFAULT_EMOJI, type PresetEmoji } from '@/lib/emojis';
 
 interface NewCollectionModalProps {
@@ -26,7 +24,6 @@ export default function NewCollectionModal({
   isSubmitting = false,
 }: NewCollectionModalProps) {
   const [name, setName] = useState('');
-  const [color, setColor] = useState<PresetColor>(DEFAULT_COLOR);
   const [emoji, setEmoji] = useState<PresetEmoji>(DEFAULT_EMOJI);
 
   const isValid = name.trim().length > 0;
@@ -37,7 +34,7 @@ export default function NewCollectionModal({
 
     onSubmit({
       name: name.trim(),
-      color: color.value,
+      color: '#FFFFFF',
       icon: emoji.emoji,
     });
   };
@@ -45,7 +42,6 @@ export default function NewCollectionModal({
   const handleClose = () => {
     // Reset form when closing
     setName('');
-    setColor(DEFAULT_COLOR);
     setEmoji(DEFAULT_EMOJI);
     onClose();
   };
@@ -58,8 +54,7 @@ export default function NewCollectionModal({
           <div className="flex items-center gap-4">
             {/* Pin preview */}
             <div
-              className="w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center transition-colors duration-200"
-              style={{ backgroundColor: color.value }}
+              className="w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center transition-colors duration-200 bg-white border border-zinc-200 dark:border-zinc-700"
             >
               <span className="text-2xl leading-none">{emoji.emoji}</span>
             </div>
@@ -69,7 +64,7 @@ export default function NewCollectionModal({
                 {name || 'Collection Name'}
               </p>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                {color.name} · {emoji.name}
+                {emoji.name}
               </p>
             </div>
           </div>
@@ -103,19 +98,11 @@ export default function NewCollectionModal({
           </div>
         </div>
 
-        {/* Color picker */}
-        <ColorPicker
-          label="Color"
-          value={color.value}
-          onSelect={setColor}
-        />
-
         {/* Emoji picker */}
         <EmojiPicker
           label="Emoji"
           value={emoji.emoji}
           onSelect={setEmoji}
-          accentColor={color.value}
         />
 
         {/* Actions */}

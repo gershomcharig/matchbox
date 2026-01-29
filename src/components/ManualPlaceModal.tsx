@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Loader2, Check, ChevronDown, AlertCircle } from 'lucide-react';
 import Modal from './Modal';
-import TagInput from './TagInput';
 import { getCollections, type Collection } from '@/app/actions/collections';
 import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
@@ -16,8 +15,6 @@ interface ManualPlaceModalProps {
   onSave: (data: {
     name: string;
     address: string;
-    notes: string;
-    tags: string[];
     collectionId: string;
   }) => Promise<void>;
   /** Whether submission is in progress */
@@ -36,8 +33,6 @@ export default function ManualPlaceModal({
   // Form state
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
-  const [notes, setNotes] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
 
   // Collection selector state
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -70,8 +65,6 @@ export default function ManualPlaceModal({
     if (!isOpen) {
       setName('');
       setAddress('');
-      setNotes('');
-      setTags([]);
       setTouched({ name: false, address: false });
     }
   }, [isOpen]);
@@ -90,8 +83,6 @@ export default function ManualPlaceModal({
     await onSave({
       name: name.trim(),
       address: address.trim(),
-      notes: notes.trim(),
-      tags,
       collectionId: selectedCollectionId,
     });
   };
@@ -109,10 +100,6 @@ export default function ManualPlaceModal({
     return isLegacyIconName(iconName) ? DEFAULT_EMOJI.emoji : iconName;
   };
 
-  // Get color for collection
-  const getCollectionColor = (colorValue: string) => {
-    return colorValue || '#f59e0b';
-  };
 
   const nameError = touched.name && !name.trim();
   const addressError = touched.address && !address.trim();
@@ -176,28 +163,6 @@ export default function ManualPlaceModal({
           </p>
         </div>
 
-        {/* Notes field (optional) */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Notes <span className="text-zinc-400 dark:text-zinc-500 font-normal">(optional)</span>
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Add any notes about this place..."
-            rows={3}
-            className="w-full py-3 px-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 resize-none"
-          />
-        </div>
-
-        {/* Tags field (optional) */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Tags <span className="text-zinc-400 dark:text-zinc-500 font-normal">(optional)</span>
-          </label>
-          <TagInput tags={tags} onChange={setTags} placeholder="Add tags..." />
-        </div>
-
         {/* Collection Selector */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -223,8 +188,7 @@ export default function ManualPlaceModal({
                 {selectedCollection ? (
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: getCollectionColor(selectedCollection.color) }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center bg-white border border-zinc-200 dark:border-zinc-700"
                     >
                       <span className="text-base leading-none">{getCollectionEmoji(selectedCollection.icon)}</span>
                     </div>
@@ -263,8 +227,7 @@ export default function ManualPlaceModal({
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center"
-                            style={{ backgroundColor: getCollectionColor(collection.color) }}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center bg-white border border-zinc-200 dark:border-zinc-700"
                           >
                             <span className="text-base leading-none">{emoji}</span>
                           </div>

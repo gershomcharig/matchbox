@@ -58,8 +58,7 @@ export default function DuplicateWarningModal({
               {/* Collection emoji */}
               {existingPlace.collection && (
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: existingPlace.collection.color }}
+                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-white border border-zinc-200 dark:border-zinc-700"
                 >
                   <span className="text-lg leading-none">{getCollectionEmoji(existingPlace.collection.icon)}</span>
                 </div>

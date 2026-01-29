@@ -136,7 +136,7 @@ export default function MapMarker({
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <circle cx="16" cy="16" r="16" fill={color} />
+          <circle cx="16" cy="16" r="15" fill="#FFFFFF" stroke="#E4E4E7" strokeWidth="2" />
         </svg>
 
         {/* Emoji centered in the circle */}

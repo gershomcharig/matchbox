@@ -16,7 +16,7 @@ import CollectionsList from './CollectionsList';
 import CollectionPlacesList from './CollectionPlacesList';
 import TrashPlacesList from './TrashPlacesList';
 import { createCollection, updateCollection, deleteCollection, getCollectionPlaceCounts, type Collection } from '@/app/actions/collections';
-import { createPlace, updatePlaceTags, checkForDuplicates, getDeletedPlaces, type PlaceWithCollection } from '@/app/actions/places';
+import { createPlace, checkForDuplicates, getDeletedPlaces, type PlaceWithCollection } from '@/app/actions/places';
 import { ToastContainer, generateToastId, type ToastData } from './Toast';
 
 interface LayoutProps {
@@ -113,8 +113,6 @@ export default function Layout({
     manualData?: {
       name: string;
       address: string;
-      notes: string;
-      tags: string[];
       lat: number;
       lng: number;
     };
@@ -348,8 +346,6 @@ export default function Layout({
   const handleSaveManualPlace = async (data: {
     name: string;
     address: string;
-    notes: string;
-    tags: string[];
     collectionId: string;
   }) => {
     setIsAddingManualPlace(true);
@@ -391,8 +387,6 @@ export default function Layout({
         manualData: {
           name: data.name || searchResult.place.name,
           address: searchResult.place.address,
-          notes: data.notes,
-          tags: data.tags,
           lat: searchResult.place.lat,
           lng: searchResult.place.lng,
         },
@@ -407,8 +401,6 @@ export default function Layout({
     await saveManualPlaceWithData({
       name: data.name || searchResult.place.name,
       address: searchResult.place.address,
-      notes: data.notes,
-      tags: data.tags,
       lat: searchResult.place.lat,
       lng: searchResult.place.lng,
       collectionId: data.collectionId,
@@ -419,8 +411,6 @@ export default function Layout({
   const saveManualPlaceWithData = async (data: {
     name: string;
     address: string;
-    notes: string;
-    tags: string[];
     lat: number;
     lng: number;
     collectionId: string;
@@ -434,18 +424,12 @@ export default function Layout({
       lat: data.lat,
       lng: data.lng,
       collectionId: data.collectionId,
-      notes: data.notes || undefined,
     });
 
     if (!result.success || !result.place) {
       setManualPlaceError(result.error || 'Failed to save place. Please try again.');
       setIsAddingManualPlace(false);
       return;
-    }
-
-    // Add tags if provided
-    if (data.tags.length > 0) {
-      await updatePlaceTags(result.place.id, data.tags);
     }
 
     console.log('[Manual Place Saved Successfully]', result.place);

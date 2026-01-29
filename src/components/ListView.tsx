@@ -233,13 +233,11 @@ export default function ListView({
               {/* Collection header */}
               <div
                 className="sticky top-0 flex items-center gap-3 px-4 py-2.5 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800"
-                style={collection ? { borderLeftColor: collection.color, borderLeftWidth: '4px' } : {}}
               >
                 {collection ? (
                   <>
                     <div
-                      className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: collection.color }}
+                      className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-white border border-zinc-200 dark:border-zinc-700"
                     >
                       {collectionEmoji && <span className="text-sm leading-none">{collectionEmoji}</span>}
                     </div>
@@ -277,10 +275,9 @@ export default function ListView({
                           : 'bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900'
                       }`}
                     >
-                      {/* Pin indicator with collection color */}
+                      {/* Pin indicator */}
                       <div
-                        className="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0"
-                        style={{ backgroundColor: collection?.color || '#9ca3af' }}
+                        className="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 bg-white border border-zinc-300 dark:border-zinc-600"
                       />
 
                       {/* Place info */}

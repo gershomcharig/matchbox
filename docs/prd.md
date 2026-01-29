@@ -29,16 +29,13 @@ Single user (personal use). The app will be password-protected to keep data priv
 ## Core Features
 
 ### Map View (Main View)
-- Displays saved places as colored pins on a Mapbox map
-- Each collection has a customizable pin color and emoji (~88 place-relevant emojis)
+- Displays saved places as white pins with emojis on a Mapbox map
+- Each collection has a customizable emoji (~88 place-relevant emojis)
 - Clicking a pin opens place details in a slide-up panel
 - Default view: zoom to show all saved places (empty state: centered on London, UK)
 - **Filtering**:
   - Select a collection in the collections panel to filter map to only those places
-  - Filter by tags via the filter bar
-  - Global search across place names, notes, and tags
 - Context menu (long-press on mobile): Edit, Move to collection, Copy address, Navigate, Delete
-- Color palette for pins: ~12-16 curated preset colors
 
 ### Place Details
 When viewing a place, display:
@@ -50,8 +47,6 @@ When viewing a place, display:
 - Website (if available)
 - Phone number (if available)
 - Collection it belongs to (clickable - filters map to that collection)
-- User-added notes (plain text)
-- User-added tags (free-form, clickable - filters map view by that tag)
 - Button to open navigation (Google Maps or other apps)
 - Button to copy address to clipboard
 
@@ -128,11 +123,11 @@ The collections panel is the main way to explore places in list format. It opens
 
 ### Collection Management
 - Create, edit, delete collections
-- Customize: name, pin color (preset palette), emoji (curated set organized by category)
+- Customize: name, emoji (curated set organized by category)
 - One default "My Places" collection auto-created on first place add (can be renamed/deleted)
 
 ### Place Management
-- Edit places: name, notes, tags, collection
+- Edit places: name, collection
 - Move places between collections
 - Soft delete: deleted places go to Trash (accessible via collections panel), recoverable for 30 days
 
@@ -182,3 +177,8 @@ The collections panel is the main way to explore places in list format. It opens
 12. **Read Later for articles**: Save article links to process later (alternative to immediate extraction)
 13. Make "Paste link" button more visible if a google maps URL (both full-size or shortened) is detected in the clipboard.
 14. **Import Google Maps lists**: Paste a link to a Google Maps list to import all places at once into a new collection named after the original list
+15. **Collection custom colors**: Colorful pin markers and collection badges (currently all white)
+16. **Tags on places**: User-added tags for categorization and filtering
+17. **Notes on places**: User-added notes for personal annotations
+18. **Search functionality**: Global search across place names, addresses, and notes
+19. **Tag filtering**: Filter map view by tags

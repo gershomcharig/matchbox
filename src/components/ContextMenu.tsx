@@ -203,8 +203,7 @@ export default function ContextMenu({
                     className="w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                   >
                     <div
-                      className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: collection.color }}
+                      className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-white border border-zinc-200 dark:border-zinc-700"
                     >
                       <span className="text-sm leading-none">{emoji}</span>
                     </div>

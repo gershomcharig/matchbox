@@ -1532,6 +1532,61 @@ Replace the Lucide icon system for collections with emojis. Emojis are more fun,
 
 ---
 
+### 2026-01-29 (UI Simplification: Remove Colors, Filters, Tags, Notes)
+
+#### Purpose
+Simplify the Matchbook UI by removing several features while keeping the database unchanged. This makes the app cleaner and easier to use.
+
+#### Features Removed from UI (DB columns kept for future re-enablement):
+1. **Collection custom colors** - All circles/pins now white with border
+2. **Filter functionality** - FilterBar component removed entirely
+3. **Search functionality** - Part of filter removal
+4. **Tags on places** - TagInput removed from UI
+5. **Notes on places** - Notes field removed from UI
+
+#### Files Deleted:
+- src/components/FilterBar.tsx
+- src/components/ColorPicker.tsx
+- src/components/TagInput.tsx
+- src/lib/colors.ts
+
+#### Major Files Modified:
+- src/app/page.tsx - Removed filter state, tags state, FilterBar
+- src/components/Layout.tsx - Updated ManualPlaceModal handler signature
+- src/components/EditPlaceModal.tsx - Removed TagInput, notes field
+- src/components/ManualPlaceModal.tsx - Removed TagInput, notes field
+- src/components/PlaceDetailsPanel.tsx - Removed tags/notes display
+- src/components/NewCollectionModal.tsx - Removed ColorPicker
+- src/components/EditCollectionModal.tsx - Removed ColorPicker
+- src/app/actions/collections.ts - Removed colors.ts import, uses '#FFFFFF' for default
+
+#### Color Styling Updates (all now use white with border):
+- src/components/MapMarker.tsx
+- src/components/CollectionsList.tsx
+- src/components/CollectionPlacesList.tsx
+- src/components/ListView.tsx
+- src/components/AddPlaceModal.tsx
+- src/components/TrashPlacesList.tsx
+- src/components/DuplicateWarningModal.tsx
+- src/components/ContextMenu.tsx
+- src/app/trash/page.tsx
+
+#### Documentation Updated:
+- docs/prd.md - Moved colors, filters, tags, notes to Future Features section
+- docs/progress.txt - This entry
+
+#### Re-enabling Features in Future:
+To re-enable any of these features:
+1. Database columns still exist (notes, tags table, collection.color)
+2. Restore component files from git history
+3. Add back state management in page.tsx
+4. Update components to use colors/tags/notes again
+
+#### Verification:
+- Build passes successfully (npm run build)
+
+---
+
 ## Next Steps (from roadmap.md)
 
 1. Phase 16: Deployment (Vercel production testing)

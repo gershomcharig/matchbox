@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Folder, Trash2, AlertTriangle } from 'lucide-react';
 import Modal from './Modal';
-import ColorPicker from './ColorPicker';
 import EmojiPicker from './EmojiPicker';
-import { PRESET_COLORS, findColorByValue, type PresetColor } from '@/lib/colors';
 import { findEmojiByChar, isLegacyIconName, DEFAULT_EMOJI, type PresetEmoji } from '@/lib/emojis';
 import type { Collection } from '@/app/actions/collections';
 
@@ -39,7 +37,6 @@ export default function EditCollectionModal({
   placeCount = 0,
 }: EditCollectionModalProps) {
   const [name, setName] = useState('');
-  const [color, setColor] = useState<PresetColor>(PRESET_COLORS[0]);
   const [emoji, setEmoji] = useState<PresetEmoji>(DEFAULT_EMOJI);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -47,8 +44,6 @@ export default function EditCollectionModal({
   useEffect(() => {
     if (collection) {
       setName(collection.name);
-      const foundColor = findColorByValue(collection.color);
-      if (foundColor) setColor(foundColor);
       // Handle legacy icon names by falling back to default emoji
       if (isLegacyIconName(collection.icon)) {
         setEmoji(DEFAULT_EMOJI);
@@ -70,7 +65,7 @@ export default function EditCollectionModal({
     onSave({
       id: collection.id,
       name: name.trim(),
-      color: color.value,
+      color: '#FFFFFF',
       icon: emoji.emoji,
     });
   };
@@ -154,8 +149,7 @@ export default function EditCollectionModal({
             <div className="flex items-center gap-4">
               {/* Pin preview */}
               <div
-                className="w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center transition-colors duration-200"
-                style={{ backgroundColor: color.value }}
+                className="w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center transition-colors duration-200 bg-white border border-zinc-200 dark:border-zinc-700"
               >
                 <span className="text-2xl leading-none">{emoji.emoji}</span>
               </div>
@@ -165,7 +159,7 @@ export default function EditCollectionModal({
                   {name || 'Collection Name'}
                 </p>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {color.name} · {emoji.name}
+                  {emoji.name}
                 </p>
               </div>
             </div>
@@ -199,19 +193,11 @@ export default function EditCollectionModal({
             </div>
           </div>
 
-          {/* Color picker */}
-          <ColorPicker
-            label="Color"
-            value={color.value}
-            onSelect={setColor}
-          />
-
           {/* Emoji picker */}
           <EmojiPicker
             label="Emoji"
             value={emoji.emoji}
             onSelect={setEmoji}
-            accentColor={color.value}
           />
 
           {/* Delete link */}

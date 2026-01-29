@@ -13,10 +13,9 @@ import {
   Phone,
   MapPin,
   Pencil,
-  Tag,
   ChevronDown,
 } from 'lucide-react';
-import { type PlaceWithCollection, type Tag as TagType } from '@/app/actions/places';
+import { type PlaceWithCollection } from '@/app/actions/places';
 import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 /**
@@ -61,27 +60,21 @@ function getOpeningStatus(openingHours: Record<string, unknown> | null): {
 interface PlaceDetailsPanelProps {
   /** The place to display */
   place: PlaceWithCollection | null;
-  /** Tags for this place */
-  tags?: TagType[];
   /** Whether the panel is open */
   isOpen: boolean;
   /** Callback when panel should close */
   onClose: () => void;
   /** Callback when collection name is clicked */
   onCollectionClick?: (collectionId: string) => void;
-  /** Callback when tag is clicked */
-  onTagClick?: (tagName: string) => void;
   /** Callback when edit button is clicked */
   onEdit?: () => void;
 }
 
 export default function PlaceDetailsPanel({
   place,
-  tags = [],
   isOpen,
   onClose,
   onCollectionClick,
-  onTagClick,
   onEdit,
 }: PlaceDetailsPanelProps) {
   const [copied, setCopied] = useState(false);
@@ -157,11 +150,7 @@ export default function PlaceDetailsPanel({
           {place.collection && (
             <button
               onClick={handleCollectionClick}
-              className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium transition-colors hover:opacity-80"
-              style={{
-                backgroundColor: `${place.collection.color}20`,
-                color: place.collection.color,
-              }}
+              className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium transition-colors hover:opacity-80 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
             >
               {collectionEmoji && <span className="text-xs">{collectionEmoji}</span>}
               {place.collection.name}
@@ -341,35 +330,6 @@ export default function PlaceDetailsPanel({
             >
               {place.phone}
             </a>
-          </div>
-        )}
-
-        {/* Tags */}
-        <div className="flex items-start gap-3">
-          <Tag size={18} className="text-zinc-400 mt-0.5 flex-shrink-0" />
-          {tags.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {tags.map((tag) => (
-                <button
-                  key={tag.id}
-                  onClick={() => onTagClick?.(tag.name)}
-                  className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 text-xs font-medium hover:bg-amber-200 dark:hover:bg-amber-800/50 transition-colors"
-                >
-                  {tag.name}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <span className="text-sm text-zinc-400 dark:text-zinc-500 italic">No tags</span>
-          )}
-        </div>
-
-        {/* Notes */}
-        {place.notes && (
-          <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
-            <p className="text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-wrap">
-              {place.notes}
-            </p>
           </div>
         )}
       </div>

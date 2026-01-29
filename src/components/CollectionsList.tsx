@@ -153,8 +153,7 @@ export default function CollectionsList({
                 >
                   {/* Color swatch with emoji */}
                   <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
-                    style={{ backgroundColor: collection.color }}
+                    className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm bg-white border border-zinc-200 dark:border-zinc-700"
                   >
                     <span className="text-base leading-none">{displayEmoji}</span>
                   </div>

@@ -132,8 +132,7 @@ export default function TrashPage() {
                     {/* Collection indicator */}
                     {place.collection && (
                       <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: place.collection.color }}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-white border border-zinc-200 dark:border-zinc-700"
                       >
                         {collectionEmoji && (
                           <span className="text-base leading-none">{collectionEmoji}</span>

@@ -3,13 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Trash2, ChevronDown } from 'lucide-react';
 import Modal from './Modal';
-import TagInput from './TagInput';
 import {
   type PlaceWithCollection,
-  type Tag,
   updatePlace,
-  updatePlaceTags,
-  getTagsForPlace,
   softDeletePlace,
 } from '@/app/actions/places';
 import { getCollections, type Collection } from '@/app/actions/collections';
@@ -36,8 +32,6 @@ export default function EditPlaceModal({
   onDelete,
 }: EditPlaceModalProps) {
   const [name, setName] = useState('');
-  const [notes, setNotes] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
   const [collectionId, setCollectionId] = useState<string>('');
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isCollectionDropdownOpen, setIsCollectionDropdownOpen] = useState(false);
@@ -50,19 +44,9 @@ export default function EditPlaceModal({
   useEffect(() => {
     if (isOpen && place) {
       setName(place.name);
-      setNotes(place.notes || '');
       setCollectionId(place.collection_id);
       setError(null);
       setShowDeleteConfirm(false);
-
-      // Load tags for this place
-      getTagsForPlace(place.id).then((result) => {
-        if (result.success && result.tags) {
-          setTags(result.tags.map((t) => t.name));
-        } else {
-          setTags([]);
-        }
-      });
 
       // Load collections for dropdown
       getCollections().then((result) => {
@@ -85,7 +69,6 @@ export default function EditPlaceModal({
       const updateResult = await updatePlace({
         id: place.id,
         name,
-        notes,
         collectionId,
       });
 
@@ -93,13 +76,6 @@ export default function EditPlaceModal({
         setError(updateResult.error || 'Failed to update place');
         setIsSubmitting(false);
         return;
-      }
-
-      // Update tags
-      const tagsResult = await updatePlaceTags(place.id, tags);
-      if (!tagsResult.success) {
-        console.error('Failed to update tags:', tagsResult.error);
-        // Don't block save for tag errors
       }
 
       setIsSubmitting(false);
@@ -110,7 +86,7 @@ export default function EditPlaceModal({
       setError('An unexpected error occurred');
       setIsSubmitting(false);
     }
-  }, [place, name, notes, collectionId, tags, onSave, onClose]);
+  }, [place, name, collectionId, onSave, onClose]);
 
   // Handle delete
   const handleDelete = useCallback(async () => {
@@ -191,8 +167,7 @@ export default function EditPlaceModal({
                 {selectedCollection && (
                   <>
                     <div
-                      className="w-5 h-5 rounded-md flex items-center justify-center"
-                      style={{ backgroundColor: selectedCollection.color }}
+                      className="w-5 h-5 rounded-md flex items-center justify-center bg-white border border-zinc-200 dark:border-zinc-700"
                     >
                       {selectedEmoji && (
                         <span className="text-xs leading-none">{selectedEmoji}</span>
@@ -235,8 +210,7 @@ export default function EditPlaceModal({
                       }`}
                     >
                       <div
-                        className="w-5 h-5 rounded-md flex items-center justify-center"
-                        style={{ backgroundColor: collection.color }}
+                        className="w-5 h-5 rounded-md flex items-center justify-center bg-white border border-zinc-200 dark:border-zinc-700"
                       >
                         <span className="text-xs leading-none">{emoji}</span>
                       </div>
@@ -247,32 +221,6 @@ export default function EditPlaceModal({
               </div>
             )}
           </div>
-        </div>
-
-        {/* Tags input */}
-        <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-            Tags
-          </label>
-          <TagInput tags={tags} onChange={setTags} placeholder="Add tags..." />
-        </div>
-
-        {/* Notes input */}
-        <div>
-          <label
-            htmlFor="edit-notes"
-            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5"
-          >
-            Notes
-          </label>
-          <textarea
-            id="edit-notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-colors resize-none"
-            placeholder="Add notes about this place..."
-          />
         </div>
 
         {/* Delete section */}

@@ -116,8 +116,7 @@ export default function CollectionPlacesList({
           {/* Collection info */}
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
-              style={{ backgroundColor: collection.color }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm bg-white border border-zinc-200 dark:border-zinc-700"
             >
               <span className="text-base leading-none">{collectionEmoji}</span>
             </div>
@@ -226,8 +225,7 @@ export default function CollectionPlacesList({
                 >
                   {/* Pin indicator */}
                   <div
-                    className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
-                    style={{ backgroundColor: collection.color }}
+                    className="w-2 h-2 rounded-full mt-2 flex-shrink-0 bg-white border border-zinc-300 dark:border-zinc-600"
                   />
 
                   {/* Place info */}

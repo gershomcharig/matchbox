@@ -1,7 +1,6 @@
 'use server';
 
 import { supabase } from '@/lib/supabase';
-import { DEFAULT_COLOR } from '@/lib/colors';
 import { DEFAULT_EMOJI } from '@/lib/emojis';
 
 /** Default collection name */
@@ -293,7 +292,7 @@ export async function getOrCreateDefaultCollection(): Promise<{
       .from('collections')
       .insert({
         name: DEFAULT_COLLECTION_NAME,
-        color: DEFAULT_COLOR.value,
+        color: '#FFFFFF',
         icon: DEFAULT_EMOJI.emoji,
         created_at: now,
         updated_at: now,
