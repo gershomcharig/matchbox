@@ -1435,6 +1435,40 @@ Hide the place panel when the edit modal opens, and restore it when the modal cl
 
 ---
 
+---
+
+### 2026-01-29 (Bug Fix: Close Place Exits Collection Context)
+
+#### Problem
+When a user:
+1. Tapped on a collection
+2. Tapped on a place within that collection
+3. Closed the place (via X button or tapping the map)
+
+The map stayed filtered to show only places from that collection. The user expected closing the place to also exit the collection context, returning the map to show all places.
+
+#### Root Cause
+In `handleClosePanel()` (src/app/page.tsx), the function:
+- Closed the place panel
+- If opened from collection, replaced history state with collection view
+- Did NOT clear `selectedCollections` state, so the map stayed filtered
+
+#### Solution Implemented
+Modified `handleClosePanel()` to clear all collection context when closing a place:
+- Clear `selectedCollections` to `[]` (removes map filtering)
+- Clear `drilledCollectionId` to `undefined` (closes collection drill-down)
+- Set `collectionsOpen` to `false` (closes collections panel)
+- Always call `historyNav.clearState()` instead of conditional logic
+- Removed unused `placeOpenedFrom` dependency from dependency array
+
+#### Files Modified:
+- src/app/page.tsx - handleClosePanel() function (lines 294-311)
+
+#### Verification:
+- Build passes successfully
+
+---
+
 ## Next Steps (from roadmap.md)
 
 1. Phase 16: Deployment (Vercel production testing)

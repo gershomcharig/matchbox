@@ -300,17 +300,15 @@ function HomeContent() {
       setSelectedPlaceTags([]);
     }, 300);
 
-    // If closed manually (not via back button), we need to update history
-    // Go back to the appropriate state based on where we came from
-    if (placeOpenedFrom?.source === 'collection' && placeOpenedFrom.collectionId) {
-      // Replace history state with the collection view
-      historyNav.replaceState({ view: 'collection', collectionId: placeOpenedFrom.collectionId });
-    } else {
-      // Clear history state entirely
-      historyNav.clearState();
-    }
+    // Clear collection context - closing a place exits everything
+    setSelectedCollections([]);
+    setDrilledCollectionId(undefined);
+    setCollectionsOpen(false);
+
+    // Clear history state entirely
+    historyNav.clearState();
     setPlaceOpenedFrom(null);
-  }, [placeOpenedFrom, historyNav]);
+  }, [historyNav]);
 
   // Handle collection click from panel - filter by this collection
   const handleCollectionClick = useCallback(
