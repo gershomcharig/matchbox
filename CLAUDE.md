@@ -34,6 +34,7 @@ When asked to work on the next task or continue development:
    - Commit all related changes with a descriptive message
    - Push to remote immediately
    - This applies to both new features AND bug fixes
+   - **Include untracked files**: If there are untracked files you didn't create (e.g., user-added docs), include them in your commit rather than leaving them out
 
 ## Progress Tracking
 
