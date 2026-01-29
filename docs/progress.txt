@@ -1587,6 +1587,42 @@ To re-enable any of these features:
 
 ---
 
+---
+
+### 2026-01-29 (Feature Removal: Trash Functionality)
+
+#### Purpose
+Remove the trash feature from the UI to simplify the app. The database schema (`deleted_at` field) is preserved for potential future re-enablement.
+
+#### Files Deleted:
+- src/components/TrashPlacesList.tsx
+- src/app/trash/page.tsx
+
+#### Files Modified:
+- src/components/EditPlaceModal.tsx - Removed delete UI, onDelete prop, Trash2 import
+- src/components/CollectionsList.tsx - Removed trash section, onSelectTrash prop, trashCount state
+- src/components/Layout.tsx - Removed TrashPlacesList import, trash state, trash handlers
+- src/components/ContextMenu.tsx - Removed delete action, Trash2 import
+- src/app/page.tsx - Removed softDeletePlace import, delete case, handleDelete callback, onDelete prop
+- src/app/actions/places.ts - Removed softDeletePlace, restorePlace, permanentlyDeletePlace, getDeletedPlaces functions
+
+#### Documentation Updated:
+- docs/prd.md - Removed trash references, added to Future Features
+- docs/roadmap.md - Noted trash removal in Phase 7
+- docs/progress.txt - This entry
+
+#### Re-enabling in Future:
+To re-enable trash:
+1. Database schema already supports it (`deleted_at` column exists)
+2. Restore deleted files from git history
+3. Re-add server actions to places.ts
+4. Update components to use trash functionality again
+
+#### Verification:
+- Build passes successfully
+
+---
+
 ## Next Steps (from roadmap.md)
 
 1. Phase 16: Deployment (Vercel production testing)

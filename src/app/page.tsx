@@ -10,7 +10,6 @@ import EditPlaceModal from '@/components/EditPlaceModal';
 import {
   getPlacesWithCollections,
   updatePlace,
-  softDeletePlace,
   type PlaceWithCollection,
 } from '@/app/actions/places';
 import ContextMenu, { type ContextMenuAction } from '@/components/ContextMenu';
@@ -272,14 +271,6 @@ function HomeContent() {
     setIsRefreshing(false);
   }, [fetchData, selectedPlace]);
 
-  // Handle delete - refresh places and close panel
-  const handleDelete = useCallback(async () => {
-    setIsRefreshing(true);
-    await fetchData();
-    handleClosePanel();
-    setIsRefreshing(false);
-  }, [fetchData, handleClosePanel]);
-
   // Handle context menu open (right-click or long-press on marker)
   const handleMarkerContextMenu = useCallback(
     (placeId: string, x: number, y: number) => {
@@ -346,16 +337,6 @@ function HomeContent() {
             const url = `https://www.google.com/maps/dir/?api=1&destination=${contextMenuPlace.lat},${contextMenuPlace.lng}`;
             window.open(url, '_blank');
           }
-          break;
-
-        case 'delete':
-          // Soft delete the place
-          setIsRefreshing(true);
-          const deleteResult = await softDeletePlace(contextMenuPlace.id);
-          if (deleteResult.success) {
-            await fetchData();
-          }
-          setIsRefreshing(false);
           break;
       }
     },
@@ -445,7 +426,6 @@ function HomeContent() {
           setIsPanelOpen(true);  // Restore panel
         }}
         onSave={handleEditSave}
-        onDelete={handleDelete}
       />
 
       {/* Context Menu */}

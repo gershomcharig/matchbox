@@ -6,7 +6,6 @@ import {
   FolderInput,
   Copy,
   Navigation,
-  Trash2,
   Check,
   ChevronRight,
 } from 'lucide-react';
@@ -14,7 +13,7 @@ import { type Collection } from '@/app/actions/collections';
 import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 export interface ContextMenuAction {
-  type: 'edit' | 'move' | 'copy' | 'navigate' | 'delete';
+  type: 'edit' | 'move' | 'copy' | 'navigate';
   collectionId?: string;
 }
 
@@ -244,18 +243,6 @@ export default function ContextMenu({
         >
           <Navigation className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
           Get directions
-        </button>
-
-        {/* Divider */}
-        <div className="my-1 border-t border-zinc-100 dark:border-zinc-800" />
-
-        {/* Delete */}
-        <button
-          onClick={() => onAction({ type: 'delete' })}
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-        >
-          <Trash2 className="w-4 h-4" />
-          Delete
         </button>
       </div>
     </div>

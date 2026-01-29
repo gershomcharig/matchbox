@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Trash2, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import Modal from './Modal';
 import {
   type PlaceWithCollection,
   updatePlace,
-  softDeletePlace,
 } from '@/app/actions/places';
 import { getCollections, type Collection } from '@/app/actions/collections';
 import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
@@ -20,8 +19,6 @@ interface EditPlaceModalProps {
   onClose: () => void;
   /** Callback when place is updated */
   onSave: () => void;
-  /** Callback when place is deleted */
-  onDelete: () => void;
 }
 
 export default function EditPlaceModal({
@@ -29,15 +26,12 @@ export default function EditPlaceModal({
   isOpen,
   onClose,
   onSave,
-  onDelete,
 }: EditPlaceModalProps) {
   const [name, setName] = useState('');
   const [collectionId, setCollectionId] = useState<string>('');
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isCollectionDropdownOpen, setIsCollectionDropdownOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Load place data when modal opens
@@ -46,7 +40,6 @@ export default function EditPlaceModal({
       setName(place.name);
       setCollectionId(place.collection_id);
       setError(null);
-      setShowDeleteConfirm(false);
 
       // Load collections for dropdown
       getCollections().then((result) => {
@@ -87,32 +80,6 @@ export default function EditPlaceModal({
       setIsSubmitting(false);
     }
   }, [place, name, collectionId, onSave, onClose]);
-
-  // Handle delete
-  const handleDelete = useCallback(async () => {
-    if (!place) return;
-
-    setIsDeleting(true);
-    setError(null);
-
-    try {
-      const result = await softDeletePlace(place.id);
-
-      if (!result.success) {
-        setError(result.error || 'Failed to delete place');
-        setIsDeleting(false);
-        return;
-      }
-
-      setIsDeleting(false);
-      onDelete();
-      onClose();
-    } catch (err) {
-      console.error('Error deleting place:', err);
-      setError('An unexpected error occurred');
-      setIsDeleting(false);
-    }
-  }, [place, onDelete, onClose]);
 
   // Get selected collection
   const selectedCollection = collections.find((c) => c.id === collectionId);
@@ -222,41 +189,6 @@ export default function EditPlaceModal({
             )}
           </div>
         </div>
-
-        {/* Delete section */}
-        {!showDeleteConfirm ? (
-          <button
-            type="button"
-            onClick={() => setShowDeleteConfirm(true)}
-            className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
-          >
-            <Trash2 size={16} />
-            <span>Delete this place</span>
-          </button>
-        ) : (
-          <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-            <p className="text-sm text-red-700 dark:text-red-300 mb-3">
-              Are you sure you want to delete this place? It will be moved to trash.
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
-              >
-                {isDeleting ? 'Deleting...' : 'Yes, delete'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 rounded-lg bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 text-zinc-700 dark:text-zinc-300 text-sm font-medium transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Action buttons */}
         <div className="flex gap-3 pt-2">

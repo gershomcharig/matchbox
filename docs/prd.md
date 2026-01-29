@@ -8,10 +8,10 @@ Matchbook is a personal place-saving app that makes it effortless to collect and
 
 **Key features**:
 - **Effortless saving**: Paste links or share from Google Maps to instantly save places
-- **Smart organization**: Group places into customizable collections with colored pins and icons
+- **Smart organization**: Group places into customizable collections with emojis
 - **Flexible browsing**: Map view with slide-up panels for exploring collections and places as lists
 - **Travel-ready**: Mobile-first PWA that works great on your phone while exploring a new city
-- **Your data**: Places stored securely with soft-delete and 30-day trash recovery
+- **Your data**: Places stored securely in your personal database
 
 ## Target User
 
@@ -116,10 +116,6 @@ The collections panel is the main way to explore places in list format. It opens
   - Show a sorted list of places in that collection (newest, oldest, A-Z, Z-A)
   - Automatically filter map pins to only show places from that collection
   - Back button returns to collections list and clears filter
-- **Trash**: Appears as a special item at the bottom of the collections list
-  - Shows deleted places with days remaining until permanent deletion
-  - Restore or permanently delete places from trash
-  - Trashed places do not appear on the map
 
 ### Collection Management
 - Create, edit, delete collections
@@ -129,7 +125,6 @@ The collections panel is the main way to explore places in list format. It opens
 ### Place Management
 - Edit places: name, collection
 - Move places between collections
-- Soft delete: deleted places go to Trash (accessible via collections panel), recoverable for 30 days
 
 ### Authentication
 - Simple password protection (single password for app access)
@@ -306,18 +301,6 @@ This section documents all user interactions with step-by-step descriptions of h
 5. User clicks destination collection
 6. Place moves immediately, pin updates
 
-### Deleting a Place
-
-**Goal**: Remove a place (with recovery option)
-
-1. User opens place details panel
-2. User clicks edit button
-3. User clicks "Delete this place" link
-4. Confirmation dialog: "Are you sure? This place will be moved to trash and can be restored within 30 days."
-5. User clicks "Delete"
-6. Place disappears from map
-7. Place appears in Trash
-
 ---
 
 ### Viewing Collections
@@ -327,7 +310,6 @@ This section documents all user interactions with step-by-step descriptions of h
 1. User clicks "Collections" button (top-right, layers icon)
 2. Collections panel slides up from bottom showing:
    - List of all collections with emoji + name + place count
-   - Trash at bottom (if contains deleted places)
 3. Each collection shows count: "5 places" or "1 place"
 
 ### Creating a New Collection
@@ -441,7 +423,6 @@ This section documents all user interactions with step-by-step descriptions of h
    - Move to → (submenu with collections)
    - Copy address
    - Get directions
-   - Delete
 
 **Mobile:**
 1. User long-presses a map pin (hold ~0.5 second)
@@ -457,37 +438,6 @@ This section documents all user interactions with step-by-step descriptions of h
 4. Android back button works the same way
 
 ---
-
-### Viewing Trash
-
-**Goal**: See deleted places
-
-1. User opens collections panel
-2. User scrolls to bottom, clicks "Trash"
-3. Trash panel shows:
-   - List of deleted places
-   - Each shows name, address, days remaining (e.g., "30 days left")
-4. Places in trash do not appear on map
-
-### Restoring a Deleted Place
-
-**Goal**: Recover a deleted place
-
-1. User opens Trash
-2. User hovers/taps on a deleted place
-3. User clicks green checkmark button
-4. Place restored: appears on map again, removed from trash
-
-### Permanently Deleting a Place
-
-**Goal**: Remove a place forever
-
-1. User opens Trash
-2. User hovers/taps on a deleted place
-3. User clicks red trash button
-4. Confirmation: "Delete permanently? This cannot be undone."
-5. User clicks "Delete"
-6. Place removed from database, cannot be recovered
 
 ## Progressive Web App (PWA)
 - Manifest.json with app name, icons, theme colors
@@ -535,3 +485,4 @@ This section documents all user interactions with step-by-step descriptions of h
 17. **Notes on places**: User-added notes for personal annotations
 18. **Search functionality**: Global search across place names, addresses, and notes
 19. **Tag filtering**: Filter map view by tags
+20. **Trash with soft-delete**: Soft-delete places to trash with 30-day recovery period

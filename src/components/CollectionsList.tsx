@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Folder, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Folder, Plus, Pencil } from 'lucide-react';
 import { getCollections, getCollectionPlaceCounts, type Collection } from '@/app/actions/collections';
-import { getDeletedPlaces } from '@/app/actions/places';
 import { isLegacyIconName, DEFAULT_EMOJI } from '@/lib/emojis';
 
 interface CollectionsListProps {
@@ -13,8 +12,6 @@ interface CollectionsListProps {
   onSelectCollection?: (collection: Collection) => void;
   /** Callback when edit button is clicked */
   onEditCollection?: (collection: Collection) => void;
-  /** Callback when Trash is clicked */
-  onSelectTrash?: () => void;
   /** Currently selected collection ID */
   selectedId?: string;
   /** Trigger refresh when this value changes */
@@ -25,13 +22,11 @@ export default function CollectionsList({
   onNewCollection,
   onSelectCollection,
   onEditCollection,
-  onSelectTrash,
   selectedId,
   refreshTrigger,
 }: CollectionsListProps) {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [placeCounts, setPlaceCounts] = useState<Record<string, number>>({});
-  const [trashCount, setTrashCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,11 +35,10 @@ export default function CollectionsList({
       setIsLoading(true);
       setError(null);
 
-      // Fetch collections, place counts, and trash count in parallel
-      const [collectionsResult, countsResult, trashResult] = await Promise.all([
+      // Fetch collections and place counts in parallel
+      const [collectionsResult, countsResult] = await Promise.all([
         getCollections(),
         getCollectionPlaceCounts(),
-        getDeletedPlaces(),
       ]);
 
       if (collectionsResult.success && collectionsResult.collections) {
@@ -55,10 +49,6 @@ export default function CollectionsList({
 
       if (countsResult.success && countsResult.counts) {
         setPlaceCounts(countsResult.counts);
-      }
-
-      if (trashResult.success && trashResult.places) {
-        setTrashCount(trashResult.places.length);
       }
 
       setIsLoading(false);
@@ -197,31 +187,6 @@ export default function CollectionsList({
               </div>
             );
           })}
-        </div>
-      )}
-
-      {/* Trash section */}
-      {onSelectTrash && (
-        <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-          <button
-            onClick={onSelectTrash}
-            className="w-full group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-          >
-            {/* Trash icon */}
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm bg-zinc-400 dark:bg-zinc-600">
-              <Trash2 className="w-4 h-4 text-white" />
-            </div>
-
-            {/* Name and count */}
-            <div className="flex-1 min-w-0 text-left">
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate block">
-                Trash
-              </span>
-              <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                {trashCount} {trashCount === 1 ? 'place' : 'places'}
-              </span>
-            </div>
-          </button>
         </div>
       )}
     </div>

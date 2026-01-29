@@ -363,26 +363,11 @@ This roadmap sequences the build in small, testable steps. Each step should be c
 - [x] Confirmation dialog
 - [x] **Test**: Delete button shows, confirmation appears
 
-### 7.8 Soft Delete
-- [x] On delete, set `deleted_at` timestamp (don't actually delete)
-- [x] Exclude deleted places from normal queries
-- [x] **Test**: Deleted place disappears from map/list
-
-### 7.9 Trash View - Basic
-- [x] Create `/trash` page
-- [x] List deleted places
-- [x] **Test**: See deleted places in trash
-
-### 7.10 Restore from Trash
-- [x] Add restore button to trash items
-- [x] Clear `deleted_at` to restore
-- [x] **Test**: Restored place reappears on map
-
-### 7.11 Permanent Delete
-- [x] Add permanent delete button in trash
-- [x] Confirmation dialog
-- [x] Actually delete from database
-- [x] **Test**: Permanently deleted place gone from trash
+### 7.8-7.11 Trash Feature (REMOVED)
+> **Note**: Trash functionality was implemented but later removed from the UI to simplify the app.
+> The database schema (`deleted_at` field) is preserved for potential future re-enablement.
+> Delete functionality removed from context menu and edit modal.
+> See Future Phases for potential re-addition.
 
 ---
 
