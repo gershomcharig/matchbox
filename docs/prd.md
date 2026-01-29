@@ -30,7 +30,7 @@ Single user (personal use). The app will be password-protected to keep data priv
 
 ### Map View (Main View)
 - Displays saved places as colored pins on a Mapbox map
-- Each collection has a customizable pin color and icon (from an icon library, ~50-80 icons)
+- Each collection has a customizable pin color and emoji (~88 place-relevant emojis)
 - Clicking a pin opens place details in a slide-up panel
 - Default view: zoom to show all saved places (empty state: centered on London, UK)
 - **Filtering**:
@@ -128,7 +128,7 @@ The collections panel is the main way to explore places in list format. It opens
 
 ### Collection Management
 - Create, edit, delete collections
-- Customize: name, pin color (preset palette), pin icon (from icon library)
+- Customize: name, pin color (preset palette), emoji (curated set organized by category)
 - One default "My Places" collection auto-created on first place add (can be renamed/deleted)
 
 ### Place Management
